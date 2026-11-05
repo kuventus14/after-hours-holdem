@@ -1,0 +1,19 @@
+{
+  "name": "holdem",
+  "version": "1.0.0",
+  "description": "친구들과 텍사스 홀덤",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js && node test-hit.js && node test-brag.js && node test-hit-server.js",
+    "test:bots": "node test-hit-bots.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "three": "^0.186.1",
+    "ws": "^8.22.0"
+  }
+}

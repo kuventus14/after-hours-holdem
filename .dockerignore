@@ -1,0 +1,7 @@
+.git
+node_modules
+*.log
+*.zip
+.DS_Store
+design-preview
+downloads

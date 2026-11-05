@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: after-hours-holdem
+    runtime: docker
+    plan: free
+    numInstances: 1
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    autoDeploy: false

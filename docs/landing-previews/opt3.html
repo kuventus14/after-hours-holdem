@@ -1,0 +1,150 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AFTER HOURS — 시안 3 · NEON NIGHT</title><style>:root{--bg:#0b1519;--ink:#f1eee5;--mute:#92a4a8;--panel:#142126;--line:#2b3b40;--gold:#dfc18c;--gold2:#ffe8b5;--teal:#7cedd4;--felt:#21615b;--red:#d67e79}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans CJK KR",system-ui,sans-serif;letter-spacing:-.025em;word-break:keep-all}
+body{overflow-x:hidden}
+button{font:inherit;border:0;cursor:pointer;color:inherit;background:none;padding:0}
+input{font:inherit;color:inherit}
+.wrap{position:relative;min-height:100dvh;max-width:1440px;margin:0 auto;padding:0 clamp(18px,4.4vw,64px);display:flex;flex-direction:column;isolation:isolate}
+.aur{position:fixed;inset:0;pointer-events:none;z-index:-2;overflow:hidden}
+.aur:before,.aur:after{content:"";position:absolute;border-radius:50%}
+.aur:before{width:80vw;height:80vw;left:-25vw;top:-35vw;background:radial-gradient(closest-side,#246e6566,transparent);animation:drift 19s ease-in-out infinite alternate}
+.aur:after{width:70vw;height:70vw;right:-30vw;bottom:-30vw;background:radial-gradient(closest-side,#70533d55,transparent);animation:drift 23s -8s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(6vw,4vw) scale(1.15)}}
+canvas#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}
+nav{height:92px;display:flex;align-items:center;justify-content:space-between;flex:none;border-bottom:1px solid #b0c0c114}
+.wordmark{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.14em;font-size:13px}
+.wordmark small{display:block;font-size:8px;letter-spacing:.22em;color:var(--mute);margin-top:4px;font-weight:500}
+.sym{width:36px;height:40px;display:grid;place-items:center;border:1px solid #b59a6866;border-radius:10px 10px 14px 14px;font-family:Georgia,serif;font-size:26px;line-height:1;color:#d9bd8a;background:linear-gradient(160deg,#1c2e32,#0f1c20)}
+.navr{display:flex;align-items:center;gap:22px;font-size:12px;color:#c4cecb}
+.fxbtn{border:1px solid #3c6b62;background:#173a38;color:#8ff0d2;border-radius:999px;padding:7px 12px;font-size:10px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 382px;gap:clamp(28px,5vw,72px);align-items:center;flex:1;padding:34px 0 40px}
+.eyebrow{display:flex;align-items:center;gap:9px;font-size:10px;font-weight:600;letter-spacing:.19em;color:var(--gold)}
+.eyebrow i{width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 14px #e4ba7d88}
+.hero-copy{color:#a0b0b3;font-size:14px;line-height:1.9;margin:0}
+em.gold{font-style:normal;background:linear-gradient(110deg,#b69863 6%,#ffe8b5 35%,#e3c38a 50%,#fff4d8 62%,#b69863 83%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5s linear infinite}
+@keyframes shine{to{background-position:-250% 0}}
+.entry-panel{position:relative;padding:30px;background:linear-gradient(145deg,#1b2b30ee,#111e23ee);border:1px solid #42505470;border-radius:18px;box-shadow:0 24px 70px #0005,0 1px 0 #ffffff08 inset;backdrop-filter:blur(8px)}
+.entry-panel:before{content:"";position:absolute;top:-1px;left:34px;right:34px;height:1px;background:linear-gradient(90deg,transparent,#cdb17c88,transparent)}
+.panel-kicker{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.18em;color:var(--gold);margin-bottom:22px}
+.panel-kicker>span:last-child{font-family:Georgia,serif;font-size:23px;color:#c4aa79}
+.entry-panel h2{font-size:25px;letter-spacing:-.05em;font-weight:600;margin:0 0 10px}
+.entry-copy{font-size:13px;color:#9fb0b3;line-height:1.9;margin:0 0 24px}
+.field-label{display:flex;justify-content:space-between;font-size:12px;color:#dce0dc;margin-bottom:10px;font-weight:500}
+.field-label span{font-size:10px;color:var(--mute);font-weight:400}
+.field{width:100%;background:#0c171c99;border:1px solid #35474d;border-radius:8px;padding:13px 14px;font-size:14px;margin-bottom:14px}
+.field::placeholder{color:#71868b}
+.opts{padding:13px 12px;background:#0f1b2080;border:1px solid #34444a;border-radius:8px;margin:0 0 14px;display:flex;align-items:center;gap:9px;font-size:12px;color:#c4cecb}
+.opts b{color:var(--gold);font-size:18px;font-weight:400}.opts em{font-style:normal;margin-left:auto;font-size:10px;color:#849b9e}
+.btn{display:flex;justify-content:space-between;align-items:center;width:100%;background:var(--gold);color:#182126;border-radius:8px;font-size:14px;line-height:22px;padding:13px 16px;font-weight:700;box-shadow:0 1px 0 #fff4 inset;position:relative;overflow:hidden}
+.btn:after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,#fff7,transparent);transform:skewX(-20deg);animation:btnshine 4.5s 1.5s infinite}
+@keyframes btnshine{60%,100%{left:130%}}
+.btn.ghost{background:#1e3339;color:var(--ink);border:1px solid #3a5158;box-shadow:none;margin-top:10px}
+.btn.ghost:after{display:none}.btn small{font-size:11px;font-weight:500;color:var(--mute)}
+.or{display:flex;align-items:center;gap:14px;font-size:11px;color:#879ca0;margin:22px 0}
+.or:before,.or:after{content:"";flex:1;height:1px;background:#37484d99}
+.join-row{display:flex;gap:8px}.join-row .field{margin:0;letter-spacing:.28em;text-transform:uppercase;font-size:16px;flex:1;min-width:0}
+.join-row .btn{width:88px;flex:none;font-size:13px;margin:0;justify-content:center;gap:7px}
+.entry-note{display:flex;justify-content:center;align-items:center;gap:8px;font-size:10px;color:#869b9f;margin-top:22px;padding-top:18px;border-top:1px solid #ffffff0a}
+footer{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:72px;border-top:1px solid #b0c0c114;color:#84989c;font-size:11px;flex:none}
+footer div{display:flex;align-items:center;gap:16px;font-size:10px}footer i{width:3px;height:3px;background:#647b80;border-radius:50%}
+.suits{letter-spacing:.55em;font-size:15px;color:#b9a17b}
+@media(max-width:900px){.layout{grid-template-columns:1fr;gap:26px;padding-top:22px}.entry-panel{padding:24px}nav{height:72px}.navr .guide{display:none}footer div,footer .suits{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
+.hero3{position:relative;min-width:0}
+.mega{margin:14px 0 6px;filter:drop-shadow(0 0 22px #dfc18c33)}
+.m{display:block;position:relative;font-weight:800;font-size:clamp(64px,10.4vw,150px);letter-spacing:-.055em;line-height:.9;color:transparent;-webkit-text-stroke:1.4px #dfc18c77;opacity:0;transform:translateY(26px);animation:arrive3 1s cubic-bezier(.2,.9,.2,1) forwards}
+.m2{animation-delay:.16s;-webkit-text-stroke-color:#dfc18c99}
+@keyframes arrive3{to{opacity:1;transform:none}}
+.m:after{content:attr(data-t);position:absolute;left:0;top:0;color:transparent;-webkit-text-stroke:0;background:linear-gradient(100deg,transparent 34%,#ffe8b5 50%,transparent 66%) 120% 0/300% 100% no-repeat;-webkit-background-clip:text;background-clip:text;animation:scan 4.8s ease-in-out infinite}
+.m2:after{animation-delay:.9s;background-image:linear-gradient(100deg,#b69863 6%,#ffe8b5 40%,#e3c38a 52%,#fff4d8 62%,#b69863 90%);background-size:250% 100%;background-position:0 0;animation:shine 5s linear infinite;opacity:.92}
+@keyframes scan{0%{background-position:130% 0}60%,100%{background-position:-30% 0}}
+.tag3{margin:10px 0 12px;font-size:clamp(24px,2.7vw,38px);font-weight:350;letter-spacing:-.06em;opacity:0;animation:fadeup .9s .5s forwards}
+@keyframes fadeup{from{transform:translateY(14px)}to{opacity:1;transform:none}}
+.hero3 .hero-copy{opacity:0;animation:fadeup .9s .7s forwards}
+.stats{display:flex;gap:clamp(14px,2.6vw,34px);margin-top:22px;opacity:0;animation:fadeup .9s .95s forwards}
+.stats b{display:block;font-size:clamp(28px,3vw,40px);font-weight:300;color:var(--gold);letter-spacing:-.04em;line-height:1}.stats span{display:block;font-size:11px;color:var(--mute);margin-top:6px;max-width:130px;line-height:1.5}
+.after{padding:10px 0 30px}
+.marq{overflow:hidden;border-block:1px solid #b0c0c114;padding:14px 0;margin:0 calc(clamp(18px,4.4vw,64px) * -1);-webkit-mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.track{display:flex;gap:44px;width:max-content;animation:marq 30s linear infinite}
+.track span{font-size:clamp(20px,2.4vw,30px);font-weight:700;letter-spacing:.02em;white-space:nowrap;color:transparent;-webkit-text-stroke:1px #dfc18c88}
+.track span:nth-child(odd){color:#dfc18c18}
+@keyframes marq{to{transform:translateX(-50%)}}
+.featgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:34px}
+.feat{background:linear-gradient(145deg,#1b2b30cc,#111e23cc);border:1px solid #3a4a4f66;border-radius:16px;padding:22px 22px 24px;opacity:0;transform:translateY(28px);transition:opacity .8s,transform .8s cubic-bezier(.2,.9,.2,1)}
+.feat.in{opacity:1;transform:none}.feat:nth-child(2){transition-delay:.12s}.feat:nth-child(3){transition-delay:.24s}
+.feat h3{margin:18px 0 8px;font-size:18px;letter-spacing:-.04em;font-weight:600}.feat p{margin:0;font-size:13px;color:#9fb0b3;line-height:1.8}
+.fv{position:relative;height:150px;border-radius:12px;background:radial-gradient(ellipse at 50% 120%,#1f625b99,#0e1d21);border:1px solid #2c3d41;overflow:hidden}
+/* 딜 */
+.dk{position:absolute;left:16px;top:50px;width:34px;height:48px;border-radius:5px;background:linear-gradient(135deg,#1f625b,#123a3a);border:3px solid #efe3c4;box-shadow:0 6px 12px #0008}.dk.d2{left:19px;top:47px}
+.dc{position:absolute;left:16px;top:50px;width:34px;height:48px;border-radius:5px;background:linear-gradient(135deg,#1f625b,#123a3a);border:3px solid #efe3c4;box-shadow:0 6px 12px #0008;opacity:0;animation:dealc 4.2s infinite}
+.dc.c2{animation-delay:.35s}.dc.c3{animation-delay:.7s}
+@keyframes dealc{0%{opacity:0;transform:translate(0,0) rotate(0)}8%{opacity:1}30%{opacity:1;transform:translate(var(--tx),var(--ty)) rotate(var(--tr))}85%{opacity:1;transform:translate(var(--tx),var(--ty)) rotate(var(--tr))}100%{opacity:0;transform:translate(var(--tx),var(--ty)) rotate(var(--tr))}}
+.dc.c1{--tx:110px;--ty:-18px;--tr:-12deg}.dc.c2{--tx:170px;--ty:4px;--tr:4deg}.dc.c3{--tx:230px;--ty:-10px;--tr:16deg}
+/* 한마디 */
+.chatv .av{position:absolute;left:50%;top:62px;width:50px;height:44px;margin-left:-25px}
+.av .body{position:absolute;left:3px;right:3px;bottom:0;height:24px;border-radius:15px 15px 6px 6px;background:#3a6f6b}.av .head{position:absolute;left:13px;top:0;width:24px;height:24px;border-radius:50%;background:#e9c9a4}.av .hair{position:absolute;left:12px;top:-2px;width:26px;height:13px;border-radius:13px 13px 4px 4px;background:#2b2320}
+.bub{position:absolute;left:50%;top:22px;transform:translateX(-50%) scale(.5);background:#e8f4f1;color:#10302e;border:1px solid #7fc2b6;font-weight:800;font-size:12px;padding:5px 11px;border-radius:10px;opacity:0;animation:bubpop 5s infinite;white-space:nowrap}
+.bub:after{content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;background:#e8f4f1;border-right:1px solid #7fc2b6;border-bottom:1px solid #7fc2b6;transform:translateX(-50%) rotate(45deg)}
+@keyframes bubpop{0%,38%{opacity:0;transform:translateX(-50%) scale(.5)}44%{opacity:1;transform:translateX(-50%) scale(1.12)}48%{transform:translateX(-50%) scale(1)}86%{opacity:1;transform:translateX(-50%) scale(1)}94%,100%{opacity:0;transform:translateX(-50%) scale(.8)}}
+.inp{position:absolute;left:14px;right:14px;bottom:10px;height:28px;border-radius:7px;background:#0c171c;border:1px solid #3a5158;padding:5px 9px;font-size:12px;color:#f1eee5;overflow:hidden}
+.inp span{display:inline-block;overflow:hidden;white-space:nowrap;width:0;vertical-align:top;border-right:1.5px solid var(--gold);animation:typing 5s infinite}
+@keyframes typing{0%{width:0}8%{width:0}30%{width:5.2em}40%,90%{width:5.2em;opacity:1}96%,100%{width:5.2em;opacity:0}}
+/* 봇 */
+.botv{display:grid;place-items:center;align-content:center;gap:12px}
+.bots{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;padding:0 10px}
+.bots span{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid #35505a;border-radius:999px;background:#15262c;font-size:12px;opacity:0;transform:scale(.6);animation:botpop 5s infinite}
+.bots em{font-style:normal;font-size:10px;color:var(--mute)}.bots span:nth-child(2){animation-delay:.5s}.bots span:nth-child(3){animation-delay:1s}
+@keyframes botpop{0%{opacity:0;transform:scale(.6)}8%{opacity:1;transform:scale(1.08)}12%,88%{opacity:1;transform:scale(1)}96%,100%{opacity:0;transform:scale(.8)}}
+.addb{background:#1e3339;border:1px solid #3a5158;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px #dfc18c1a;border-color:#dfc18c88}}
+@media(max-width:900px){.featgrid{grid-template-columns:1fr}.m{font-size:clamp(60px,19vw,110px)}.stats span{max-width:100px}}
+</style></head><body><canvas id="fx"></canvas><div class="aur"></div>
+<div class="wrap">
+<nav><div class="wordmark"><div class="sym">♠</div><div>AFTER HOURS<small>PRIVATE POKER CLUB</small></div></div><div class="navr"><button class="fxbtn">✦ 효과 켜짐</button><span class="guide">플레이 가이드 ↗</span></div></nav>
+<div class="layout">
+<section class="hero3">
+<div class="eyebrow"><i></i> THE BEST NIGHTS ARE SHARED</div>
+<div class="mega" aria-hidden="true"><span class="m m1" data-t="AFTER">AFTER</span><span class="m m2" data-t="HOURS">HOURS</span></div>
+<h1 class="tag3">오늘 밤, 우리의 <em class="gold">테이블.</em></h1>
+<p class="hero-copy">익숙한 친구들, 새로운 한 수.<br>어디에 있든 같은 테이블에 모여요.</p>
+<div class="stats"><div><b data-n="10">0</b><span>명이 한 테이블에</span></div><div><b data-n="3">0</b><span>D 아바타의 딜·베팅</span></div><div><b data-n="4">0</b><span>가지 감정표현 + 한마디</span></div></div>
+</section>
+
+<section class="entry-panel">
+<div class="panel-kicker"><span>TAKE A SEAT</span><span>♠</span></div>
+<h2>반가워요, 플레이어.</h2>
+<p class="entry-copy">닉네임 하나면 준비 끝.<br>오늘의 테이블을 열어볼까요?</p>
+<div class="field-label">닉네임 <span>최대 12자</span></div>
+<input class="field" placeholder="테이블에서 사용할 이름" value="민영">
+<div class="opts"><span style="color:var(--gold);font-size:18px">☷</span> 테이블 설정 <em>블라인드 · 리바인</em><b>+</b></div>
+<button class="btn">새 테이블 만들기 <span>↗</span></button>
+<button class="btn ghost"><span>연습 테이블 만들기</span><small>봇과 혼자 연습</small></button>
+<div class="or">초대받으셨나요?</div>
+<div class="field-label">친구의 방 코드</div>
+<div class="join-row"><input class="field" placeholder="ABCD" maxlength="4"><button class="btn ghost">입장 <span>→</span></button></div>
+<div class="entry-note"><span style="font-size:19px;color:#aebdb6">♧</span> 가입 없이, 친구끼리 가볍게.</div>
+</section>
+</div>
+<section class="after">
+<div class="marq"><div class="track"><span>♠ ALL-IN</span><span>♥ 말풍선 한마디</span><span>♦ 3D 아바타 딜러</span><span>♣ 봇과 연습</span><span>♠ 10인 테이블</span><span>♥ 자동 정산</span><span>♠ ALL-IN</span><span>♥ 말풍선 한마디</span><span>♦ 3D 아바타 딜러</span><span>♣ 봇과 연습</span><span>♠ 10인 테이블</span><span>♥ 자동 정산</span></div></div>
+<div class="featgrid">
+<article class="feat"><div class="fv dealv"><i class="dk"></i><i class="dk d2"></i><i class="dc c1"></i><i class="dc c2"></i><i class="dc c3"></i></div><h3>아바타가 직접 딜해요</h3><p>카드를 던지고, 칩을 밀고, 플랍·턴·리버가 한 장씩 깔려요. 진짜 테이블에 앉은 것처럼.</p></article>
+<article class="feat"><div class="fv chatv"><div class="bub"><span>아 짜증나</span></div><div class="av"><i class="body"></i><i class="head"></i><i class="hair"></i></div><div class="inp"><span>아 짜증나</span></div></div><h3>한마디면 말풍선이 떠요</h3><p>화남·감사·슬픔·빨리, 그리고 내가 쓴 한마디가 아바타 위에 바로 보여요.</p></article>
+<article class="feat"><div class="fv botv"><div class="bots"><span>민준<em>신중형</em></span><span>서연<em>공격형</em></span><span>도윤<em>균형형</em></span></div><div class="addb">+ 봇 추가</div></div><h3>혼자서도 연습할 수 있어요</h3><p>카드와 자리, 팟 오즈를 보고 판단하는 봇과 연습 테이블에서 감을 잡아 보세요.</p></article>
+</div>
+</section>
+
+<footer><span>좋은 사람들과, 좋은 게임.</span><div><span>2–10명</span><i></i><span>텍사스 홀덤</span><i></i><span>가상 칩 플레이</span></div><span class="suits">♠♥♦♣</span></footer>
+</div>
+<script>(() => {
+const cv = document.querySelector('#fx'), ctx = cv.getContext('2d'); let W, H, dpr;
+const size = () => { dpr = Math.min(devicePixelRatio || 1, 2); W = cv.width = innerWidth * dpr; H = cv.height = innerHeight * dpr; }; addEventListener('resize', size); size();
+const ember = () => ({ x: Math.random() * W, y: H * (.6 + Math.random() * .5), vx: (Math.random() - .5) * .35 * dpr, vy: -(.3 + Math.random() * .8) * dpr, life: 0, max: 360 + Math.random() * 420, r: (.8 + Math.random() * 1.9) * dpr });
+const parts = Array.from({ length: 70 }, () => { const e = ember(); e.life = Math.random() * e.max; return e; });
+(function tick() { ctx.clearRect(0, 0, W, H); ctx.globalCompositeOperation = 'lighter'; ctx.shadowColor = '#efd095'; ctx.shadowBlur = 9 * dpr; ctx.fillStyle = '#efd095'; for (const p of parts) { p.life++; p.x += p.vx + Math.sin(p.life / 40) * .15 * dpr; p.y += p.vy; const t = p.life / p.max; if (t >= 1 || p.y < -20) Object.assign(p, ember()); ctx.globalAlpha = Math.sin(Math.min(1, t) * Math.PI) * .55; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); } requestAnimationFrame(tick); })();
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .25 });
+document.querySelectorAll('.feat').forEach(el => io.observe(el));
+document.querySelectorAll('[data-n]').forEach(b => { const n = +b.dataset.n, t0 = performance.now() + 1100; (function st(t) { const k = Math.max(0, Math.min(1, (t - t0) / 1200)); b.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(st); })(t0); });
+})();
+</script></body></html>

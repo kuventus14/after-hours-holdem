@@ -1,0 +1,65 @@
+/* 로비 히어로: ROYAL REVEAL — 카드가 날아와 뒤집히며 족보가 완성된다.
+   주의: motion.css 가 효과 꺼짐/움직임 줄이기에서 모든 animation 을 none 으로 만든다.
+   그래서 '처음엔 숨김' 상태는 반드시 keyframes 의 from 으로만 두고, 숨겨둔 채 JS 가 보여주는 요소는 .static 일 때 보이게 한다. */
+.royal-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.lobby-story h1{animation:none}
+.lobby-story h1 .ln{display:block;overflow:hidden;padding:.04em 0 .1em}
+.lobby-story h1 .ln>span{display:inline-block;animation:royal-rise 1s cubic-bezier(.2,.9,.2,1) both}
+.lobby-story h1 .ln:nth-child(2)>span{animation-delay:.14s}
+@keyframes royal-rise{from{transform:translateY(112%);opacity:0;filter:blur(10px)}}
+.lobby-story .hero-copy{animation:royal-fade .9s .45s both}
+@keyframes royal-fade{from{opacity:0;transform:translateY(14px)}}
+
+.royal{container-type:inline-size;position:relative;margin:0 0 10px;perspective:1300px;--cw:clamp(56px,10.2vw,124px)}
+/* 카드 크기: 영역 폭과 화면 높이 중 작은 쪽에 맞춰 첫 화면 안에 다 들어오게 (cqw·dvh 를 지원할 때만) */
+@supports (width:1cqw) and (height:1dvh){.royal{--cw:clamp(56px,min(19cqw,13.5dvh),124px)}}
+.royal-stage{position:relative;height:calc(var(--cw) * 2.6);transform-style:preserve-3d;will-change:transform}
+.royal-halo{position:absolute;left:50%;bottom:-14%;width:88%;height:88%;transform:translateX(-50%);background:radial-gradient(closest-side,#2f8f82aa,#1b5953 42%,transparent 74%);will-change:transform,opacity;animation:royal-breathe 5s ease-in-out infinite}
+@keyframes royal-breathe{50%{opacity:.6;transform:translateX(-50%) scale(1.06)}}
+.royal-chip{position:absolute;width:calc(var(--cw) * .37);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#0c1c1f 0 34%,transparent 35%),repeating-conic-gradient(var(--red,#d67e79) 0 15deg,#f1eee5 15deg 30deg);border:3px solid #f1eee5;box-shadow:0 10px 22px #0009,inset 0 0 0 3px #0003;animation:royal-bob 6s ease-in-out infinite}
+.royal-chip.g{background:radial-gradient(circle,#0c1c1f 0 34%,transparent 35%),repeating-conic-gradient(#c9a766 0 15deg,#f1e6c9 15deg 30deg)}
+@keyframes royal-bob{50%{translate:0 -14px;rotate:18deg}}
+.royal-fan{position:absolute;left:50%;bottom:calc(var(--cw) * .36);width:0;height:0} /* 바깥 카드는 호를 따라 아래로 내려오므로 그만큼 띄운다 */
+.royal-card{perspective:800px;position:absolute;left:calc(var(--cw) / -2);bottom:0;width:var(--cw);height:calc(var(--cw) * 1.42);transform-origin:50% 135%;opacity:0}
+.royal-card .in{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateY(180deg)}
+.royal-card .face,.royal-card .back{position:absolute;inset:0;border-radius:calc(var(--cw) * .09);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.royal-card .face{background:linear-gradient(160deg,#fcf7ea,#e8dfc6);color:#1b2a2c;box-shadow:0 16px 34px #0009,inset 0 0 0 1px #fff9}
+.royal-card .face.red{color:#b8423b}
+.royal-card .r{position:absolute;left:9%;top:5%;font-weight:700;font-size:calc(var(--cw) * .24);line-height:1.05;text-align:center}
+.royal-card .r s{display:block;text-decoration:none;font-size:.82em}
+.royal-card .r.b{left:auto;right:9%;top:auto;bottom:5%;transform:rotate(180deg)}
+.royal-card .big{position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--cw) * .6)}
+.royal-card .back{transform:rotateY(180deg);background:linear-gradient(135deg,#1f625b,#123a3a);box-shadow:0 16px 34px #0009;border:calc(var(--cw) * .05) solid #efe3c4}
+.royal-card .back:before{content:"♠";position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--cw) * .5);color:#dfc18c;opacity:.85}
+.royal-card.hit .face{box-shadow:0 0 0 2px #dfc18c,0 0 46px #dfc18cbb,0 16px 34px #0009}
+.royal-sweep{visibility:hidden;-webkit-mask:linear-gradient(to bottom,transparent,#000 24%,#000 76%,transparent);mask:linear-gradient(to bottom,transparent,#000 24%,#000 76%,transparent);position:absolute;inset:-6% -4% 4%;background:linear-gradient(105deg,transparent 42%,#fff2c8aa 50%,transparent 58%);transform:translateX(-130%);mix-blend-mode:screen;pointer-events:none}
+.royal-stamp{position:absolute;left:50%;top:-2px;transform:translateX(-50%);text-align:center;pointer-events:none;opacity:0;white-space:nowrap}
+.royal-stamp small{display:block;font-size:clamp(10px,1.2vw,13px);letter-spacing:.5em;color:var(--gold);margin-bottom:4px;padding-left:.5em}
+.royal-stamp b{font-size:clamp(20px,2.6vw,32px);letter-spacing:.06em;background:linear-gradient(110deg,#b69863,#ffe8b5 40%,#fff4d8 55%,#b69863);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px #dfc18c88)}
+.royal-stamp.on{animation:royal-stamp 3.4s both}
+@keyframes royal-stamp{0%{opacity:0;transform:translateX(-50%) scale(1.6);filter:blur(6px)}12%{opacity:1;transform:translateX(-50%) scale(1);filter:none}85%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-8px)}}
+.royal.static .royal-stamp{opacity:1}
+
+
+
+
+/* 성능: 크게 움직이는 배경 층은 그래픽 카드가 따로 처리하도록 표시한다 (미표시 시 소프트웨어 합성에서 프레임마다 다시 그려짐) */
+.lobby-atmosphere:before,.lobby-atmosphere:after,.lobby-beam{will-change:transform}
+
+/* 투명도 3% 로 거의 보이지 않는 빛줄기는 겹침 비용만 크다 */
+.lobby-beam{display:none}
+/* 가벼운 모드(royal.js 가 느린 기기를 감지하면 켜짐): 큰 반투명 층·입자·떠다니는 칩을 끈다 */
+#lobby.lite .lobby-atmosphere,#lobby.lite .royal-fx{display:none}
+#lobby.lite .royal-chip{animation:none}
+#lobby.lite .royal-stage{transform:none!important}
+
+/* 왼쪽 영역은 위쪽부터 배치한다: 오른쪽 입력 패널이 길어서 가운데 정렬하면 카드가 첫 화면 아래로 밀려 잘린다 */
+@media(min-width:701px){.lobby-story{justify-content:flex-start;padding-top:6px}}
+
+/* 폰: 히어로가 입력 폼·'새 테이블 만들기'를 첫 화면 아래로 밀어내지 않도록 카드를 작게 하고 옛 여백을 걷는다 */
+@media(max-width:700px){
+  .royal{margin-top:4px;margin-bottom:0;--cw:56px}
+  .royal-stage{height:calc(var(--cw) * 2.45)}
+  .lobby-story{padding-bottom:6px;min-height:0}
+}
+@supports (width:1cqw){@media(max-width:700px){.royal{--cw:clamp(52px,15cqw,68px)}}}
