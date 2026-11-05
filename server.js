@@ -13,6 +13,15 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.
 
 const server = http.createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]);
+  if (req.method === 'GET' && p === '/api/online') {
+    const connected = new Set([...wss.clients].filter(ws => ws.readyState === 1));
+    const seated = new Set();
+    for (const room of rooms.values()) {
+      for (const ws of room.clients.values()) if (connected.has(ws)) seated.add(ws);
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' });
+    return res.end(JSON.stringify({ online: connected.size, lobby: connected.size - seated.size, inRooms: seated.size }));
+  }
   if (p === '/') p = '/index.html';
   const file = path.normalize(path.join(PUBLIC, p));
   if (!file.startsWith(PUBLIC)) { res.writeHead(403); return res.end(); }
