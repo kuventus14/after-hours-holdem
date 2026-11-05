@@ -34,8 +34,12 @@
 .royal-card.hit .face{box-shadow:0 0 0 2px #dfc18c,0 0 46px #dfc18cbb,0 16px 34px #0009}
 .royal-sweep{visibility:hidden;-webkit-mask:linear-gradient(to bottom,transparent,#000 24%,#000 76%,transparent);mask:linear-gradient(to bottom,transparent,#000 24%,#000 76%,transparent);position:absolute;inset:-6% -4% 4%;background:linear-gradient(105deg,transparent 42%,#fff2c8aa 50%,transparent 58%);transform:translateX(-130%);mix-blend-mode:screen;pointer-events:none}
 .royal-stamp{position:absolute;left:50%;top:-2px;transform:translateX(-50%);text-align:center;pointer-events:none;opacity:0;white-space:nowrap}
-.royal-stamp small{display:block;font-size:clamp(10px,1.2vw,13px);letter-spacing:.5em;color:var(--gold);margin-bottom:4px;padding-left:.5em}
-.royal-stamp b{font-size:clamp(20px,2.6vw,32px);letter-spacing:.06em;background:linear-gradient(110deg,#b69863,#ffe8b5 40%,#fff4d8 55%,#b69863);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px #dfc18c88)}
+.royal-stamp small{display:block;font-size:clamp(10px,1.2vw,13px);letter-spacing:.5em;color:var(--gold);margin-bottom:6px;padding-left:.5em;min-height:1.2em}
+.royal-stamp b{display:block;font-family:Didot,"Bodoni 72","Playfair Display",Georgia,serif;font-weight:700;font-size:clamp(24px,3.5vw,46px);letter-spacing:.14em;padding-left:.14em;line-height:1.05;filter:drop-shadow(0 0 16px #dfc18c99)}
+/* 글자마다 금속 느낌 그라데이션 (글자가 transform 으로 움직이면 부모의 글자 클립이 안 먹어서 글자별로 건다) */
+.royal-stamp b i{display:inline-block;font-style:normal;background:linear-gradient(180deg,#fff8e6 0%,#ffe8b5 38%,#c9a766 62%,#8f7442 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.royal-stamp.on b i{animation:royal-letter .9s calc(var(--i) * 45ms) cubic-bezier(.2,.9,.2,1) both}
+@keyframes royal-letter{0%{opacity:0;transform:translateY(.55em) scale(1.7);filter:blur(8px)}60%{opacity:1;filter:none}}
 .royal-stamp.on{animation:royal-stamp 3.4s both}
 @keyframes royal-stamp{0%{opacity:0;transform:translateX(-50%) scale(1.6);filter:blur(6px)}12%{opacity:1;transform:translateX(-50%) scale(1);filter:none}85%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-8px)}}
 .royal.static .royal-stamp{opacity:1}

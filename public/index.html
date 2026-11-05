@@ -278,6 +278,8 @@ body.kickmode .p3d:not(.dealer):not(.me){pointer-events:auto;cursor:pointer;outl
 <link rel="stylesheet" href="./lounge.css">
 <link rel="stylesheet" href="./motion.css">
 <link rel="stylesheet" href="./royal.css">
+<script src="./i18n-data.js"></script>
+<script src="./i18n.js"></script>
 </head>
 <body>
 
@@ -297,7 +299,7 @@ body.kickmode .p3d:not(.dealer):not(.me){pointer-events:auto;cursor:pointer;outl
         <div class="royal-halo"></div>
         <i class="royal-chip" style="left:3%;top:38%"></i><i class="royal-chip g" style="left:90%;top:20%;width:calc(var(--cw) * .3)"></i><i class="royal-chip" style="left:82%;top:70%;width:calc(var(--cw) * .27)"></i><i class="royal-chip g" style="left:12%;top:76%;width:calc(var(--cw) * .24)"></i>
         <div class="royal-fan" id="royalFan"></div><div class="royal-sweep" id="royalSweep"></div>
-        <div class="royal-stamp" id="royalStamp"><small id="royalEn">ROYAL FLUSH</small><b id="royalKo">로열 플러시</b></div>
+        <div class="royal-stamp" id="royalStamp"><small id="royalSub"></small><b id="royalName">ROYAL FLUSH</b></div>
       </div></div>
       <div class="scene-caption"><span>01 — THE AFTER HOURS TABLE</span><span>한 판의 여유, 함께하는 즐거움.</span></div>
     </section>
@@ -988,7 +990,7 @@ function copySettle(){
   lines.push('', '송금 안내');
   if (!st.transfers.length) lines.push('주고받을 돈 없음');
   st.transfers.forEach((t) => lines.push(`${t.fromName} → ${t.toName}  ${fmt(t.amount)}원`));
-  const text = lines.join('\n');
+  const text = lines.map((l) => (window.tr ? window.tr(l) : l)).join('\n');
   (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast('정산 결과를 복사했어요'), () => toast('복사에 실패했어요'));
 }
 

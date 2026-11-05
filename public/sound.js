@@ -176,8 +176,7 @@ export class Sound {
 
   // ── 음성 ──
   _voice() {
-    if (this._v) return this._v;
-    try { const vs = speechSynthesis.getVoices(); const v = vs.find((x) => /^ko/i.test(x.lang)) || null; if (v) this._v = v; return v; } catch { return null; }
+    try { const L = (window.I18N ? window.I18N.speech() : 'ko-KR').slice(0, 2), vs = speechSynthesis.getVoices(); if (this._v && this._vl === L) return this._v; const v = vs.find((x) => x.lang.toLowerCase().startsWith(L)) || null; this._v = v; this._vl = L; return v; } catch { return null; }
   }
   /** "콜", "레이즈 400" 처럼 한마디. 사람마다 목소리 높낮이를 다르게 해서 누가 말하는지 구분되게 한다 */
   say(text, who = '') {
@@ -185,8 +184,8 @@ export class Sound {
     this.stats.voice++; this.stats.spoken.push(text); if (this.stats.spoken.length > 200) this.stats.spoken.shift();
     if (this.testMode || typeof speechSynthesis === 'undefined') return;
     try {
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'ko-KR'; const v = this._voice(); if (v) u.voice = v;
+      const u = new SpeechSynthesisUtterance(window.tr ? window.tr(text) : text); // 고른 언어로 읽는다 (stats.spoken 은 원문 그대로)
+      u.lang = window.I18N ? window.I18N.speech() : 'ko-KR'; const v = this._voice(); if (v) u.voice = v;
       u.rate = 1.12; u.pitch = clamp(0.8 + (hash(who) % 7) * 0.1, 0.8, 1.4); u.volume = Math.min(1, this.volume / 0.7);
       if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel(); // 밀리지 않게 최신 말만
       setTimeout(() => { try { speechSynthesis.speak(u); } catch {} }, speechSynthesis.speaking ? 40 : 0);

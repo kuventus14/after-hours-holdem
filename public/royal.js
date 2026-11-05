@@ -11,9 +11,9 @@ const alive = () => motionOn() && !lobby.hidden && !document.hidden;
 // ── 카드 ──
 const RED = { '♥': 1, '♦': 1 };
 const HANDS = [
-  { en: 'ROYAL FLUSH', ko: '로열 플러시', cards: ['A♠', 'K♠', 'Q♠', 'J♠', '10♠'] },
-  { en: 'FOUR OF A KIND', ko: '포카드', cards: ['A♠', 'A♥', 'A♦', 'A♣', 'K♠'] },
-  { en: 'STRAIGHT FLUSH', ko: '스트레이트 플러시', cards: ['9♥', '8♥', '7♥', '6♥', '5♥'] },
+  { en: 'ROYAL FLUSH', sub: 'THE PERFECT HAND', ko: '로열 플러시', cards: ['A♠', 'K♠', 'Q♠', 'J♠', '10♠'] },
+  { en: 'FOUR OF A KIND', sub: 'QUADS · FOUR ACES', ko: '포카드', cards: ['A♠', 'A♥', 'A♦', 'A♣', 'K♠'] },
+  { en: 'STRAIGHT FLUSH', sub: 'FIVE IN SEQUENCE', ko: '스트레이트 플러시', cards: ['9♥', '8♥', '7♥', '6♥', '5♥'] },
 ];
 const make = (code) => {
   const rk = code.slice(0, -1), s = code.slice(-1), el = document.createElement('div');
@@ -22,7 +22,16 @@ const make = (code) => {
   return el;
 };
 const pose = (i, n, cw, dy = 0) => { const k = i - (n - 1) / 2; return `translate(${k * cw * .66}px,${k * k * cw * .08 + dy}px) rotate(${k * 8.5}deg)`; };
-const setText = (h) => { $('#royalEn').textContent = h.en; $('#royalKo').textContent = h.ko; royal.setAttribute('aria-label', `카드 다섯 장이 펼쳐진 장면: ${h.ko}`); }; // 장면이 바뀔 때마다 스크린리더용 이름도 맞춘다
+// 큰 글씨는 어느 언어에서나 영어 족보 이름(글자가 하나씩 떠오른다), 작은 글씨는 고른 언어의 족보 이름(영어일 땐 한 줄 소개)
+let curHand = HANDS[0];
+const subText = (h) => (window.I18N && window.I18N.lang !== 'en' ? window.I18N.tr(h.ko) : h.sub);
+const setText = (h) => {
+  curHand = h;
+  $('#royalSub').textContent = subText(h);
+  $('#royalName').innerHTML = [...h.en].map((c, i) => `<i style="--i:${i}">${c === ' ' ? '&nbsp;' : c}</i>`).join('');
+  royal.setAttribute('aria-label', `카드 다섯 장이 펼쳐진 장면: ${h.ko}`); // 장면이 바뀔 때마다 스크린리더용 이름도 맞춘다 (i18n.js 가 언어에 맞게 바꿈)
+};
+document.addEventListener('holdem:lang', () => { $('#royalSub').textContent = subText(curHand); });
 
 // ── 금빛 입자 (불씨 + 족보 완성 때 터지는 폭죽) ──
 // 입자마다 shadowBlur 를 걸면 매 프레임 번짐 연산이 쌓여 크게 느려진다(측정: 0.6fps → 18fps).
