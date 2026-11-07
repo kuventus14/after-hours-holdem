@@ -105,6 +105,12 @@ function explainDiff(wScore, lScore) {
   return '';
 }
 
+// 앱(noMoney): 돈 관련 칸(투입 금액·송금 안내·합계)은 서버에서 아예 내보내지 않고, 칩 순위와 칩 손익만 준다
+function chipsOnly(st) {
+  if (!st) return st;
+  return { reason: st.reason, startChips: st.startChips, error: st.error, rows: (st.rows || []).map((r) => ({ i: r.i, name: r.name, rank: r.rank, buyIns: r.buyIns, chips: r.chips, netChips: r.netChips })) };
+}
+
 /**
  * 정산 계산. 전부 정수 연산이라 어긋나지 않는다.
  *  - 칩 손익 = 최종 칩 - 바이인 횟수 × 시작 칩   (칩은 보존되므로 합계가 반드시 0)
@@ -333,8 +339,9 @@ class Table {
   // 설정 값 검사 + 적용 (방 만들 때, 시작 전 방장이 바꿀 때 공통)
   applySettings(o) {
     const int = (v) => Math.floor(+v);
-    const buyIn = int(o.buyIn), sb = int(o.sb), bb = int(o.bb);
+    const sb = int(o.sb), bb = int(o.bb);
     const chipsGiven = o.chips ?? o.startChips; // 지정하지 않으면 칩 1개 = 1원 (시작 칩 = 바이인 금액)
+    const buyIn = this.opts.noMoney ? int(chipsGiven ?? o.buyIn) : int(o.buyIn); // 앱(noMoney): 금액 개념이 없어 바이인 = 시작 칩 개수로만 쓴다
     const chips = chipsGiven === undefined ? buyIn : int(chipsGiven);
     const mins = int(o.blindMinutes ?? 0), rebuys = int(o.maxRebuys ?? 0);
     if (![sb, bb, chips, buyIn, mins, rebuys].every(Number.isFinite)) return '숫자를 입력해 주세요';
@@ -969,7 +976,7 @@ class Table {
       startChips: this.startChips, pot: this.pot, community: this.community.map(cardStr),
       buyIn: this.buyIn, blindMinutes: this.blindMinutes, maxRebuys: this.maxRebuys, blindLevel: this.blindLevel, nextBlindAt: this.nextBlindAt,
       practice: !!this.practice,
-      ended: this.ended, endAfterHand: this.endAfterHand, ending: this.ending, settlement: this.settlement,
+      ended: this.ended, endAfterHand: this.endAfterHand, ending: this.ending, settlement: this.opts.noMoney ? chipsOnly(this.settlement) : this.settlement,
       paused: this.paused, pauseAfterHand: this.pauseAfterHand, departed: this.departed.map((d) => ({ name: d.name, buyIns: d.buyIns, chips: d.chips })),
       deadline: this.deadline, nextAt: this.phase === 'showdown' ? this.nextAt : 0, serverNow: Date.now(),
       me, isHost: token === this.hostToken, results: this.results, myHand,

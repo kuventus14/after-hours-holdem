@@ -4,7 +4,8 @@
 //  - 화면 글자는 MutationObserver 로 바꾸고, 고른 언어에서 원문 한국어는 노드마다 기억해 두었다가 언어를 바꿀 때 다시 쓴다.
 //  - 금액('원')은 고른 나라 화폐로 환산해 보여 준다. 환산율은 고정한 대략 값이라 숫자 앞에 ≈ 를 붙인다(진짜 정산은 늘 원 기준).
 (() => {
-  const KEY = 'holdem_lang', HAN = /[가-힣]/;
+  const KEY = 'holdem_lang', HAN = /[가-힣]/, WON = /(\d[\d,]*)원/g;
+  const APP = !!window.APP_MODE; // 앱: 돈(원)이 아니라 칩 개수로만 보여 준다 (환산 표시 없음)
   const DATA = window.I18N_DATA || {};
   // shortcut: 환산율은 고정값(2025년 말 기준 대략), 실시간 환율이 필요해지면 서버에서 받아오게 바꾼다
   const LANGS = {
@@ -37,7 +38,9 @@
   }
   pats.sort((a, b) => b.len - a.len); // 고정 글자가 많은(더 구체적인) 틀부터
 
-  const fmtMoney = (won) => {
+  const CHIP = { ko: (n) => n + '칩', en: (n) => n + ' chips', ja: (n) => n + 'チップ', zh: (n) => n + '筹码' };
+  const fmtMoney = (won, raw) => {
+    if (APP) return CHIP[lang](raw);
     const c = LANGS[lang]; if (!c.cur) return null;
     const v = won / c.per;
     return '≈' + new Intl.NumberFormat(c.loc, { style: 'currency', currency: c.cur, maximumFractionDigits: c.cur === 'JPY' ? 0 : 2, minimumFractionDigits: c.cur === 'JPY' ? 0 : 2 }).format(v);
@@ -66,7 +69,7 @@
   }
   // 한글이 이어진 덩어리를 사전의 고정 문구로 하나씩 바꾼다 (사전에 통째로 없으면 단어 앞부분부터 가장 긴 것으로)
   function runs(s, L) {
-    s = s.replace(/(\d[\d,]*)원/g, (_, n) => (L === lang && fmtMoney(Number(n.replace(/,/g, '')))) || _); // '원' 단독 문구가 숫자 뒤 단위를 가로채지 않게 먼저 환산
+    s = s.replace(WON, (_, n) => (L === lang && fmtMoney(Number(n.replace(/,/g, '')), n)) || _); // '원' 단독 문구가 숫자 뒤 단위를 가로채지 않게 먼저 환산
     return s.replace(/[가-힣](?:[가-힣 ]*[가-힣])?/g, (run) => {
       const hit = exact.get(run)?.[L]; if (hit != null) return hit;
       const w = run.split(' '), out = [];
@@ -79,7 +82,8 @@
     });
   }
   function tr(s, L = lang) {
-    if (L === 'ko' || typeof s !== 'string' || !HAN.test(s)) return s;
+    if (typeof s !== 'string' || !HAN.test(s)) return s;
+    if (L === 'ko') return APP ? s.replace(WON, (_, n) => CHIP.ko(n)) : s;
     const ck = L + '\u0001' + s; let hit = cache.get(ck); if (hit !== undefined) return hit;
     const m = s.match(/^(\s*)([\s\S]*?)(\s*)$/), core = m[2].replace(/\s+/g, ' ');
     let out = exact.get(core)?.[L];
@@ -92,7 +96,7 @@
     }
     if (out == null) out = runs(core, L); // 통째로 맞는 틀이 없으면 한글 덩어리마다 따로 (여러 조각이 붙어 나온 줄)
     out = m[1] + out + m[3];
-    if (L === lang) out = out.replace(/(\d[\d,]*)원/g, (_, n) => fmtMoney(Number(n.replace(/,/g, ''))) ?? _);
+    if (L === lang) out = out.replace(WON, (_, n) => fmtMoney(Number(n.replace(/,/g, '')), n) ?? _);
     if (cache.size > 6000) cache.clear();
     cache.set(ck, out); return out;
   }
@@ -193,13 +197,13 @@
     host.insertBefore(el, before || host.firstChild); pickers.push(el); renderPicker();
   }
 
-  window.I18N = { get lang() { return lang; }, set: setLang, tr: (s) => tr(s), money: (won) => fmtMoney(won), speech: () => LANGS[lang].speech };
+  window.I18N = { mount: (host) => mountPicker(host), get lang() { return lang; }, set: setLang, tr: (s) => tr(s), money: (won) => fmtMoney(won), speech: () => LANGS[lang].speech };
   window.tr = window.I18N.tr;
   const boot = () => {
     mountPicker(document.querySelector('.lobby-nav-actions'));
     mountPicker(document.querySelector('#game .top'), document.getElementById('sndBtn'));
     document.documentElement.lang = LANGS[lang].html;
-    if (lang !== 'ko') { walk(document.documentElement); watch(); }
+    if (lang !== 'ko' || APP) { walk(document.documentElement); watch(); }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

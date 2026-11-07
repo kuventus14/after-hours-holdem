@@ -1,0 +1,127 @@
+/* 앱 모드 폰 화면의 게임 셸 (C-3 시안). body.appgame 은 appgame.js 가 "앱 모드 + 폭 700px 이하"일 때만 붙인다 → 웹·PC 는 그대로. */
+body.appgame.ingame{overflow:hidden;overscroll-behavior:none}
+body.appgame.ingame #game{position:fixed;inset:0;padding:0;max-width:none;width:100%;height:100dvh;min-height:0;display:block;overflow:hidden}
+
+/* 위쪽 한 줄: ‹ · 방 코드 · 블라인드 · ☰ */
+body.appgame .top{position:absolute;top:0;left:0;right:0;z-index:30;min-height:0;display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;border:0;background:none;pointer-events:none}
+body.appgame .top > *{pointer-events:auto}
+body.appgame .top .table-brand,body.appgame .top .grow,body.appgame .top #handNo,body.appgame .top .motion-toggle,body.appgame .top .sndbtn,body.appgame .top .chatbtn{display:none}
+body.appgame .top .pill:not(#agMenuBtn),body.appgame .top .room-pill{background:#0c1c1fcc;backdrop-filter:blur(8px)}
+body.appgame .top #blinds{font-size:11px;color:var(--mute);margin:0 auto 0 0;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;flex:1 1 0}
+body.appgame .top .room-pill{flex:none}
+body.appgame #agMenu .langpick{display:block !important}
+body.appgame .top #blindCd{display:none}
+body.appgame .top .backbtn{padding:6px 12px}
+#agMenuBtn{display:none}
+body.appgame #agMenuBtn{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;padding:0;font-size:17px;background:#0c1c1fcc;border:1px solid var(--line);color:var(--ink);backdrop-filter:blur(8px)}
+#agMenu{display:none}
+body.appgame #agMenu.open{display:flex;position:fixed;z-index:70;top:calc(env(safe-area-inset-top) + 54px);right:12px;flex-direction:column;gap:8px;align-items:stretch;min-width:170px;padding:12px;border-radius:16px;background:#0c1c1ff5;border:1px solid var(--line);backdrop-filter:blur(14px)}
+body.appgame #agMenu > *{display:flex !important;justify-content:center;width:100%}
+body.appgame #agMenu .hostbtns{flex-direction:column;gap:8px}
+body.appgame #agMenu .hostbtns[hidden],body.appgame #agMenu [hidden]{display:none !important}
+body.appgame #agMenu .hostbtns > button{width:100%}
+body.appgame .volbox{top:calc(env(safe-area-inset-top) + 54px);z-index:71}
+
+/* 3D 테이블: 위쪽 64%, 아래는 내 카드 자리 */
+body.appgame .stage{position:absolute;inset:0;display:block;padding:0;gap:0}
+body.appgame .table-wrap{border:0;box-shadow:none;position:absolute;left:0;right:0;top:0;height:66dvh;margin:0;border-radius:0;aspect-ratio:auto;min-height:0}
+body.appgame .table-heading{display:none}
+
+/* 하단: 카드 + 작은 버튼 */
+body.appgame .control-dock{position:absolute;left:0;right:0;bottom:0;height:38dvh;padding:0;margin:0;border:0;border-radius:0;overflow:visible;display:block;background:linear-gradient(transparent,var(--bg) 34%)}
+body.appgame .dock-heading,body.appgame .activity,body.appgame .sayrow,body.appgame .emotes,body.appgame .presets,body.appgame .raise{display:none}
+body.appgame .cardstrip{position:absolute;left:0;right:0;bottom:calc(96px + env(safe-area-inset-bottom));top:auto;display:flex;justify-content:center;align-items:flex-end;margin:0;padding:0;background:none;border:0;border-radius:0;transform:none;touch-action:none;z-index:5}
+body.appgame .cardstrip .cap{display:none}
+body.appgame .cardstrip .grp + .grp{display:none}
+body.appgame .cardstrip .grp{padding:0;border:0}
+body.appgame .cardstrip .cs,body.appgame .cardstrip .grp:first-child .cs{display:flex;gap:14px;--cw:86px;--ch:120px}
+body.appgame .cardstrip .grp:first-child .pcard{width:var(--cw);height:var(--ch)}
+body.appgame .cardstrip .cs .slot{width:var(--cw);height:var(--ch)}
+
+body.appgame .cardstrip.dragging .cs{transition:none}
+body.appgame .cardstrip .cs{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+body.appgame .hint-swipe{position:absolute;left:0;right:0;bottom:calc(226px + env(safe-area-inset-bottom));text-align:center;font:700 11px system-ui;letter-spacing:.14em;color:var(--gold);z-index:4;pointer-events:none;opacity:.85}
+body.appgame .hint-swipe[hidden]{display:none}
+body.appgame .bar{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(14px + env(safe-area-inset-bottom));background:none;border:0}
+body.appgame .bar .msg{position:absolute;left:0;right:0;bottom:calc(60px + env(safe-area-inset-bottom));margin:0;padding:0;border:0;min-height:0;text-align:center;font-size:12px;letter-spacing:.06em;color:var(--mute)}
+body.appgame .betwrap{display:block}
+body.appgame .acts{gap:8px}
+body.appgame .acts button{min-height:40px;height:40px;padding:0 4px;font-size:13px;border-radius:12px}
+body.appgame .bar .a-fold{background:#3a1c1c;color:#ffb8b0;border:1px solid #7d3b38}
+body.appgame .bar .a-call{background:linear-gradient(180deg,#2b8077,#1f625b);color:#fff}
+body.appgame .bar .a-raise{background:linear-gradient(180deg,#f3dba8,#c9a766);color:#201807}
+
+/* 대기실·종료 화면은 아래에서 올라오는 패널 */
+body.appgame[data-phase="waiting"] .control-dock,body.appgame[data-phase="ended"] .control-dock{height:auto;max-height:74dvh;overflow:auto;padding:16px 16px calc(14px + env(safe-area-inset-bottom));background:var(--panel);border-radius:22px 22px 0 0;border-top:1px solid var(--line)}
+body.appgame[data-phase="waiting"] .bar,body.appgame[data-phase="ended"] .bar{position:static;padding:0}
+body.appgame[data-phase="waiting"] .bar .msg,body.appgame[data-phase="ended"] .bar .msg{position:static;margin:8px 0}
+body.appgame[data-phase="waiting"] .sayrow{display:none}
+body.appgame[data-phase="ended"] .acts button{height:auto;min-height:46px;font-size:14px}
+
+/* 이모지·채팅 둥근 버튼 */
+.ag-fab{display:none}
+body.appgame.ingame .ag-fab{display:grid;position:fixed;z-index:25;width:50px;height:50px;border-radius:50%;place-items:center;font-size:21px;background:#0c1c1fe6;border:1px solid var(--line);color:var(--ink);backdrop-filter:blur(8px);padding:0}
+body.appgame.ingame #agEmoBtn{left:16px;bottom:calc(126px + env(safe-area-inset-bottom))}
+body.appgame.ingame #agChatBtn{right:16px;bottom:calc(126px + env(safe-area-inset-bottom))}
+body.appgame.ingame #agChatBtn i{position:absolute;top:-4px;right:-2px;min-width:18px;height:18px;border-radius:9px;background:#d67e79;color:#fff;font:800 11px/18px system-ui;text-align:center;font-style:normal;padding:0 4px}
+body.appgame.ingame #agChatBtn i[hidden]{display:none}
+body.appgame[data-phase="waiting"] .ag-fab{bottom:auto !important}
+body.appgame[data-phase="waiting"] #agEmoBtn{left:auto;right:16px;top:calc(env(safe-area-inset-top) + 56px)}
+body.appgame[data-phase="waiting"] #agChatBtn{top:calc(env(safe-area-inset-top) + 112px)}
+body.appgame.ag-raising .ag-fab{display:none}
+
+/* 이모지·한마디 시트 */
+#agSheetBack{display:none}
+body.appgame #agSheetBack.open{display:block;position:fixed;inset:0;z-index:64;background:#0008}
+#agSheet{display:none}
+body.appgame #agSheet.open{display:block;position:fixed;left:0;right:0;bottom:0;z-index:65;padding:10px 16px calc(18px + env(safe-area-inset-bottom));background:#0c1c1ff5;border-top:1px solid var(--line);border-radius:26px 26px 0 0;backdrop-filter:blur(14px)}
+#agSheet .grab{width:44px;height:5px;border-radius:9px;background:#ffffff40;margin:0 auto 14px}
+#agSheet .emotes{display:flex;margin:0 0 14px;padding:0;border:0}
+#agSheet .emotes button{min-height:44px}
+#agSheet .sayrow{display:flex;margin:0}
+
+/* 레이즈 화면 */
+#agRaise{display:none}
+body.appgame #agRaise.open{display:block;position:fixed;inset:0;z-index:80;background:#050a0cd0;backdrop-filter:blur(6px);touch-action:none;user-select:none;-webkit-user-select:none}
+#agRaise .pot{position:absolute;left:50%;top:calc(env(safe-area-inset-top) + 120px);transform:translateX(-50%);padding:6px 14px;border-radius:99px;border:1px solid #7cedd4;color:#7cedd4;background:#0c1c1fdd;font:700 13px system-ui;white-space:nowrap}
+#agRaise .big{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 170px);text-align:center}
+#agRaise .big small{display:block;font:700 10px system-ui;letter-spacing:.26em;color:var(--gold)}
+#agRaise .big b{display:block;font:400 64px/1.1 Didot,"Bodoni 72",Georgia,serif;color:#ffe8b5}
+#agRaise .trk{position:absolute;right:42px;top:34%;bottom:calc(190px + env(safe-area-inset-bottom));width:10px;border-radius:9px;background:#ffffff22;touch-action:none}
+#agRaise .trk::before{content:"";position:absolute;left:-24px;right:-24px;top:-10px;bottom:-10px}
+#agRaise .fill{position:absolute;left:0;right:0;bottom:0;border-radius:9px;background:linear-gradient(0deg,#1f625b,#dfc18c)}
+#agRaise .knob{position:absolute;left:50%;width:34px;height:34px;border-radius:50%;background:#ffe8b5;transform:translate(-50%,50%);box-shadow:0 0 18px #dfc18caa}
+#agRaise .lb{position:absolute;right:22px;font:700 11px system-ui;letter-spacing:.14em;color:var(--gold);padding:8px}
+#agRaise .lb.lbt{top:calc(34% - 40px)}
+#agRaise .lb.lbb{bottom:calc(150px + env(safe-area-inset-bottom));color:var(--mute)}
+#agRaise .hand{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom));display:flex;gap:14px;--cw:86px;--ch:120px;pointer-events:none}
+
+#agRaise .btns{position:absolute;left:22px;right:22px;bottom:calc(40px + env(safe-area-inset-bottom));display:flex;gap:10px}
+#agRaise .btns button{flex:1;height:52px;border-radius:16px;font-weight:700;font-size:16px;border:1px solid var(--line);color:var(--ink);background:#12282b}
+#agRaise .btns .cn{background:#3a1c1c;border-color:#7d3b38;color:#ffb8b0;flex:.8}
+#agRaise .btns .ok{background:linear-gradient(180deg,#f3dba8,#c9a766);color:#201807;border:0;flex:1.2;box-shadow:0 8px 24px #c9a76655}
+#agRaise .btns .cn.hot{outline:2px solid #ffb8b0}
+
+/* ☰ 메뉴의 아이콘 버튼에 글자 붙이기 */
+body.appgame #agMenu #sndBtn::after{content:" 소리 설정";margin-left:6px}
+body.appgame #agMenu #rbBtn::after{content:" 신고·차단";margin-left:6px}
+
+/* 실제 트럼프 모양 카드 (내 카드) */
+.pcard.ag{border-radius:9px;background:linear-gradient(160deg,#fffdf6,#f1e9d2);box-shadow:0 4px 14px #0009,inset 0 0 0 1px #0002;overflow:hidden;font-family:Georgia,"Times New Roman",serif}
+.pcard.ag.red{color:#c0392f}
+.pcard.ag .idx{position:absolute;left:5px;top:4px;display:flex;flex-direction:column;align-items:center;line-height:1}
+.pcard.ag .idx b{font-size:calc(var(--cw)*.22);font-weight:800;letter-spacing:-.04em}
+.pcard.ag .idx b.ten{font-size:calc(var(--cw)*.18);letter-spacing:-.1em}
+.pcard.ag .idx i{font-style:normal;font-size:calc(var(--cw)*.17);margin-top:1px}
+.pcard.ag .idx.bt{left:auto;top:auto;right:5px;bottom:4px;transform:rotate(180deg)}
+.pcard.ag .pips{position:absolute;left:28%;right:28%;top:12%;bottom:12%}
+.pcard.ag .pip{position:absolute;transform:translate(-50%,-50%);font-style:normal;font-size:calc(var(--cw)*.21);line-height:1}
+.pcard.ag .pip.dn{transform:translate(-50%,-50%) rotate(180deg)}
+.pcard.ag .pip.ace{font-size:calc(var(--cw)*.78)}
+.pcard.ag .face{position:absolute;inset:0;border:1.5px solid currentColor;border-radius:5px;display:grid;place-items:center;background:repeating-linear-gradient(135deg,#0000 0 5px,#00000010 5px 6px),linear-gradient(180deg,#fff8e0,#efe1b5)}
+.pcard.ag.red .face{background:repeating-linear-gradient(135deg,#0000 0 5px,#c0392f14 5px 6px),linear-gradient(180deg,#fff6e6,#f4dcc2)}
+.pcard.ag .fletter{font-size:calc(var(--cw)*.42);font-weight:700;line-height:1;margin-top:18%}
+.pcard.ag .fcrown{position:absolute;top:6%;left:50%;transform:translateX(-50%);font-size:calc(var(--cw)*.27);line-height:1}
+.pcard.ag .fs{position:absolute;font-style:normal;font-size:calc(var(--cw)*.16)}
+.pcard.ag .fs.a{left:10%;bottom:8%}
+.pcard.ag .fs.b{right:10%;bottom:8%}
