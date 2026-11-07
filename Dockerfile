@@ -4,7 +4,7 @@ ENV NODE_ENV=production PORT=3000
 WORKDIR /app
 COPY --chown=node:node package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
-COPY --chown=node:node server.js engine.js bot.js ./
+COPY --chown=node:node server.js engine.js bot.js auth.js filter.js mailer.js ./
 COPY --chown=node:node public ./public
 USER node
 EXPOSE 3000
