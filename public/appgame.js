@@ -97,7 +97,20 @@
     const strip = $('#cardstrip'), hintEl = Object.assign(document.createElement('div'), { className: 'hint-swipe', textContent: '▲ 위로 밀어 레이즈 · ‹ 폴드 · 콜 ›' });
     $('.control-dock').appendChild(hintEl);
 
-    dressAll(strip); new MutationObserver(() => dressAll(strip)).observe(strip, { childList: true, subtree: true });
+    // 보드(공용 카드): 숨겨 둔 카드 띠의 보드 칸을 큰 카드로 내 패 위에 따로 보여준다
+    const board = Object.assign(document.createElement('div'), { id: 'agBoard', hidden: true });
+    board.innerHTML = '<div class="lbl"></div><div class="bd"></div>';
+    $('.stage').appendChild(board);
+    const STREET = { preflop: '프리플랍', flop: '플랍', turn: '턴', river: '리버', showdown: '쇼다운' };
+    const syncBoard = () => {
+      const src = $('.grp + .grp .cs', strip), s = st();
+      board.hidden = !src || strip.classList.contains('off');
+      if (board.hidden) return;
+      const bd = $('.bd', board); if (bd.innerHTML !== src.innerHTML) { bd.innerHTML = src.innerHTML; dressAll(bd); }
+      $('.lbl', board).textContent = `${STREET[s && s.phase] || ''} · 보드`;
+    };
+    const syncStrip = () => { dressAll(strip); syncBoard(); };
+    syncStrip(); new MutationObserver(syncStrip).observe(strip, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
     let R = null; // { mode:'drag'|'tap', val, info }
     const trk = $('.trk', rz), fill = $('.fill', rz), knob = $('.knob', rz), ok = $('.ok', rz), cn = $('.cn', rz);
     const step = () => Math.max(1, (R.info.s.bb || 1));
