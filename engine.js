@@ -169,6 +169,8 @@ const BRAG_MS = 8000, BRAG_ANIM_MS = 10000;
 class Table {
   constructor(opts = {}) {
     this.opts = Object.assign({ auto: true, pace: true, turnMs: 30000, nextHandMs: 7000, absentMs: 3000, showdownExtraMs: 4000 }, opts);
+    // The mode is fixed at creation, including against later settings messages.
+    Object.defineProperty(this.opts, 'noMoney', { value: opts.noMoney === true, writable: false, configurable: false, enumerable: true });
     this.players = [];
     this.sb = 10;
     this.bb = 20;
@@ -347,7 +349,7 @@ class Table {
     if (![sb, bb, chips, buyIn, mins, rebuys].every(Number.isFinite)) return '숫자를 입력해 주세요';
     if (!(sb > 0 && bb >= sb)) return '블라인드 값을 확인해 주세요 (빅블라인드는 스몰블라인드 이상)';
     if (!(chips >= bb * 10)) return chipsGiven === undefined ? '바이인 금액은 빅블라인드의 10배 이상이어야 해요' : '시작 칩은 빅블라인드의 10배 이상이어야 해요';
-    if (!(buyIn >= 0 && buyIn <= 100000000)) return '바이인 금액은 0 ~ 1억 원 사이로 입력해 주세요';
+    if (!(buyIn >= 0 && buyIn <= 100000000)) return this.opts.noMoney ? '시작 칩은 0 ~ 100,000,000개 사이로 입력해 주세요' : '바이인 금액은 0 ~ 1억 원 사이로 입력해 주세요';
     if (!(mins >= 0 && mins <= 600)) return '블라인드 인상 주기는 0 ~ 600분이에요 (0이면 오르지 않아요)';
     if (!(rebuys >= 0 && rebuys <= 99)) return '리바인 횟수는 0 ~ 99회예요';
     this.sb = sb; this.bb = bb; this.startChips = chips; this.buyIn = buyIn; this.blindMinutes = mins; this.maxRebuys = rebuys;
@@ -505,7 +507,7 @@ class Table {
     v.stun = 'pending'; v.stunBy = h.token;
     this.lastHitHand = this.handNo; this.lastHitBy = h.name; this.hitUntil = Date.now() + HIT_ANIM_MS; this.hitSeq++;
     this.emit({ k: 'hit', i: hi, to: idx, amt: HIT_COST }); // 화면 연출 시간은 더하지 않는다: 때리는 동안에도 판은 그대로 진행
-    this.say(`⚾ ${h.name} 님이 ${v.name} 님을 때렸어요 (${HIT_COST.toLocaleString()}원 → ${v.name}) · ${v.name} 님은 다음 핸드를 기절해서 쉬어요`);
+    this.say(`⚾ ${h.name} 님이 ${v.name} 님을 때렸어요 (${HIT_COST.toLocaleString()}${this.opts.noMoney ? '칩' : '원'} → ${v.name}) · ${v.name} 님은 다음 핸드를 기절해서 쉬어요`);
     this.onChange();
     return null;
   }
@@ -523,7 +525,7 @@ class Table {
     if (!(v.chips > STUN_PAY)) return '칩이 부족해서 합의금을 낼 수 없어요';
     v.chips -= STUN_PAY; h.chips += STUN_PAY; v.stun = ''; v.stunBy = '';
     this.emit({ k: 'pay', i: vi, to: this.players.indexOf(h), amt: STUN_PAY });
-    this.say(`💸 ${v.name} 님이 ${h.name} 님에게 ${STUN_PAY.toLocaleString()}원을 내고 기절을 풀었어요`);
+    this.say(`💸 ${v.name} 님이 ${h.name} 님에게 ${STUN_PAY.toLocaleString()}${this.opts.noMoney ? '칩' : '원'}을 내고 기절을 풀었어요`);
     this.onChange();
     return null;
   }
@@ -930,7 +932,7 @@ class Table {
     if (this.handNo === 0) return '게임을 시작하기 전에는 종료할 수 없어요';
     this.endAfterHand = true;
     if (this.inProgress()) {
-      this.say('⏹ 방장이 게임 종료를 요청했어요. 이번 핸드가 끝나면 정산해요');
+      this.say(this.opts.noMoney ? '⏹ 방장이 게임 종료를 요청했어요. 이번 핸드가 끝나면 칩 순위를 보여줘요' : '⏹ 방장이 게임 종료를 요청했어요. 이번 핸드가 끝나면 정산해요');
     } else if (this.phase === 'showdown') {
       this.ending = 'host';
       clearTimeout(this.nextTimer);
@@ -953,8 +955,17 @@ class Table {
     if (this.ended) return;
     this.ended = true; this.phase = 'ended'; this.toAct = -1; this.deadline = 0; this.nextAt = 0; this.ending = null; this.paused = false; this.pauseAfterHand = false;
     for (const p of this.players) { p.stun = ''; p.stunBy = ''; } // 끝난 게임에는 기절도 남기지 않는다
-    try { this.settlement = { reason, ...computeSettlement([...this.players, ...this.departed], this.startChips, this.buyIn) }; }
-    catch (e) { console.error('정산 오류', e); this.settlement = { reason, error: e.message, rows: [], transfers: [] }; }
+    try {
+      if (this.opts.noMoney) {
+        // Pure games never calculate money or transfers, even internally.
+        const rows = [...this.players, ...this.departed].map((p, i) => ({ i, name: p.name, buyIns: p.buyIns, chips: p.chips, netChips: p.chips - p.buyIns * this.startChips }));
+        rows.sort((a, b) => b.chips - a.chips || a.i - b.i);
+        let rank = 0, previous = null;
+        rows.forEach((r, i) => { if (r.chips !== previous) { rank = i + 1; previous = r.chips; } r.rank = rank; });
+        this.settlement = { reason, startChips: this.startChips, rows };
+      } else this.settlement = { reason, ...computeSettlement([...this.players, ...this.departed], this.startChips, this.buyIn) };
+    }
+    catch (e) { console.error('정산 오류', e); this.settlement = { reason, error: e.message, rows: [], ...(this.opts.noMoney ? {} : { transfers: [] }) }; }
     this.say(reason === 'winner' ? '🏆 1등이 가려져서 게임이 끝났어요' : reason === 'out' ? '🏁 칩이 모두 떨어져 연습이 끝났어요' : '⏹ 방장이 게임을 종료했어요');
     this.onChange();
   }
@@ -974,7 +985,7 @@ class Table {
       bbIdx: this.inProgress() || this.phase === 'showdown' ? this.bbIdx : -1,
       currentBet: this.currentBet, minRaise: this.minRaise, sb: this.sb, bb: this.bb,
       startChips: this.startChips, pot: this.pot, community: this.community.map(cardStr),
-      buyIn: this.buyIn, blindMinutes: this.blindMinutes, maxRebuys: this.maxRebuys, blindLevel: this.blindLevel, nextBlindAt: this.nextBlindAt,
+      ...(this.opts.noMoney ? {} : { buyIn: this.buyIn }), noMoney: this.opts.noMoney, mode: this.opts.noMoney ? 'pure' : 'settlement', blindMinutes: this.blindMinutes, maxRebuys: this.maxRebuys, blindLevel: this.blindLevel, nextBlindAt: this.nextBlindAt,
       practice: !!this.practice,
       ended: this.ended, endAfterHand: this.endAfterHand, ending: this.ending, settlement: this.opts.noMoney ? chipsOnly(this.settlement) : this.settlement,
       paused: this.paused, pauseAfterHand: this.pauseAfterHand, departed: this.departed.map((d) => ({ name: d.name, buyIns: d.buyIns, chips: d.chips })),

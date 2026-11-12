@@ -10,6 +10,7 @@ const { tick: tickBots } = require('./bot');
 const { createAuth } = require('./auth');
 const { clean } = require('./filter');
 const { sendMail } = require('./mailer');
+const { createObserverHandler, observerHeaders } = require('./observer');
 
 const PORT = process.env.PORT || 3000;
 // 앱 모드(HOLDEM_APP=1): 로그인 필수 · 오픈/비공개 방 · 돈(원) 개념 없는 칩 전용. 켜지 않으면 지금까지의 웹 게임 그대로다.
@@ -93,6 +94,9 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' });
     return res.end(JSON.stringify({ online: connected.size, lobby: connected.size - seated.size, inRooms: seated.size }));
   }
+  if (p === '/api/observer' || p.startsWith('/api/observer/')) return observer(req, res, p);
+  if (p === '/admin' || p === '/admin/') p = '/admin.html';
+  if (p.startsWith('/admin')) observerHeaders(res);
   if (APP && p.startsWith('/api/')) return api(req, res, p);
   if (p === '/') p = '/index.html';
   const file = path.normalize(path.join(PUBLIC, p));
@@ -100,7 +104,7 @@ const server = http.createServer((req, res) => {
   fs.readFile(file, (err, data) => {
     if (err) { res.writeHead(404); return res.end('not found'); }
     if (APP && p === '/index.html') data = Buffer.from(data.toString('utf8').replace('<head>', '<head>\n<script>window.APP_MODE=true</script>')); // 앱 모드 표시 (브라우저가 가장 먼저 읽는다)
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': p.startsWith('/admin') ? 'no-store' : 'no-cache' });
     res.end(data);
   });
 });
@@ -109,6 +113,7 @@ const server = http.createServer((req, res) => {
 const TABLE_OPTS = Object.assign(process.env.HOLDEM_FAST ? { pace: false, nextHandMs: 150, showdownExtraMs: 0, absentMs: 300 }
   : process.env.HOLDEM_NEXT_MS ? { nextHandMs: +process.env.HOLDEM_NEXT_MS } : {}, APP ? { noMoney: true } : {});
 const rooms = new Map(); // code → { table, clients: Map(token → ws), lastActive }
+const observer = createObserverHandler(rooms);
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ';
 function newCode() {
   for (;;) {
@@ -188,7 +193,8 @@ wss.on('connection', (ws) => {
       const created = !rc;
       let vis = 'private', pw = null;
       if (created) {
-        const table = new Table(TABLE_OPTS);
+        if (m.mode !== undefined && !['pure', 'settlement'].includes(m.mode)) return send({ t: 'error', msg: '방 종류를 확인해 주세요' });
+        const table = new Table({ ...TABLE_OPTS, noMoney: APP || !!m.practice || m.mode === 'pure' });
         table.practice = !!m.practice; // 연습 테이블: 봇과 혼자 연습
         if (APP && !table.practice) { // 방 공개 범위: 오픈형은 목록에 보이고, 비공개는 비밀번호를 아는 사람만 들어온다
           vis = m.vis === 'open' ? 'open' : 'private';

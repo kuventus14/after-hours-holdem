@@ -75,7 +75,7 @@ function askConfirm(i) {
   target = i; targetName = v.name; // 번호가 그 사이 밀려도 엉뚱한 사람이 맞지 않게, 보낼 때 이름도 함께
   $('#hitConfirmBody').innerHTML = `<b style="color:var(--ink);font-size:16px">${api.esc(v.name)}</b> 님을 때릴까요?<br>
     내 칩 <b style="color:#ffb27a">${fmt(h.cost)}</b>이 ${api.esc(v.name)} 님에게 넘어가요. <span style="color:#8fd9b0">내 칩 ${fmt(me.chips)} → ${fmt(me.chips - h.cost)}</span><br>
-    맞은 사람은 <b style="color:var(--ink)">다음 핸드를 기절해서 쉬어요.</b> (${fmt(h.pay)}원을 내면 풀 수 있어요)<br>
+    맞은 사람은 <b style="color:var(--ink)">다음 핸드를 기절해서 쉬어요.</b> (${fmt(h.pay)}${s.noMoney ? '칩' : '원'}을 내면 풀 수 있어요)<br>
     <span style="font-size:12px">때린 핸드부터 ${h.cooldown}핸드 동안은 아무도 때릴 수 없어요.</span>`;
   modal.hidden = false;
 }
@@ -95,8 +95,8 @@ function onHit(ev) { // hit/pay 이벤트가 도착한 순간: 숫자는 game3d 
   floaty(ev.i, `−${a}`, '#ff9a8a'); floaty(ev.to, `+${a}`, '#9ff0c4');
   if (ev.k !== 'pay' || !s) return;
   const nm = (k) => (s.players[k] ? s.players[k].name : '');
-  if (ev.i === s.me) api.toast(`${nm(ev.to)}님에게 ${a}원을 보냈어요 · 다음 핸드부터 뛸 수 있어요`);
-  else if (ev.to === s.me) api.toast(`${nm(ev.i)}님이 합의금 ${a}원을 보냈어요`);
+  if (ev.i === s.me) api.toast(`${nm(ev.to)}님에게 ${a}${s.noMoney ? '칩' : '원'}을 보냈어요 · 다음 핸드부터 뛸 수 있어요`);
+  else if (ev.to === s.me) api.toast(`${nm(ev.i)}님이 합의금 ${a}${s.noMoney ? '칩' : '원'}을 보냈어요`);
 }
 
 // ───────── 화면 갱신 (상태가 올 때·아바타가 쓰러지거나 깨어날 때만) ─────────
@@ -125,7 +125,7 @@ export function update(s) {
     banner.hidden = false;
     const by = s.players[me.stunBy], can = me.chips > s.hit.pay;
     const html = mine === 'pending'
-      ? `<b>😵 기절로 인한 다음 핸드는 플레이가 불가합니다</b>다음 핸드를 뛰려면 때린 ${by ? api.esc(by.name) : '사람'}님에게 ${fmt(s.hit.pay)}원을 보내야 해요 <button id="hitPay"${can ? '' : ' disabled'}>${fmt(s.hit.pay)}원 보내고 뛰기</button>${can ? '' : '<small>칩이 부족해요</small>'}`
+      ? `<b>😵 기절로 인한 다음 핸드는 플레이가 불가합니다</b>다음 핸드를 뛰려면 때린 ${by ? api.esc(by.name) : '사람'}님에게 ${fmt(s.hit.pay)}${s.noMoney ? '칩' : '원'}을 보내야 해요 <button id="hitPay"${can ? '' : ' disabled'}>${fmt(s.hit.pay)}${s.noMoney ? '칩' : '원'} 보내고 뛰기</button>${can ? '' : '<small>칩이 부족해요</small>'}`
       : `<b>😵 기절 중 · 이번 핸드는 쉬어요</b>이 핸드가 끝나면 깨어나요`;
     if (banner._h !== html) { banner.innerHTML = html; banner._h = html; } // 바뀔 때만 다시 그린다 (자주 갈아끼우면 버튼 클릭이 씹힌다)
   } else banner.hidden = true;

@@ -283,6 +283,7 @@ body.kickmode .p3d:not(.dealer):not(.me){pointer-events:auto;cursor:pointer;outl
 <script src="./i18n.js"></script>
 <script src="./app.js"></script>
 <script src="./appgame.js"></script>
+<link rel="stylesheet" href="./room-mode.css">
 </head>
 <body>
 
@@ -312,6 +313,11 @@ body.kickmode .p3d:not(.dealer):not(.me){pointer-events:auto;cursor:pointer;outl
       <p class="entry-copy">닉네임 하나면 준비 끝.<br>오늘의 테이블을 열어볼까요?</p>
       <label class="field-label" for="name">닉네임 <span>최대 12자</span></label>
       <input id="name" class="field" placeholder="테이블에서 사용할 이름" maxlength="12" autocomplete="nickname">
+      <div id="modeChoice" class="mode-choice">
+        <label class="field-label" for="roomMode">게임 종류 <span>생성 후 변경 불가</span></label>
+        <select id="roomMode" class="field"><option value="pure">미정산 · 가상 칩 게임</option><option value="settlement">정산 · 기존 게임</option></select>
+        <p id="modeHint" class="mode-hint">현금·환전·상금 없이 가상 칩으로 플레이해요.</p>
+      </div>
       <details class="opts" id="lobbyOptsBox">
         <summary><span class="settings-icon" aria-hidden="true">☷</span> 테이블 설정 <span class="summary-meta">블라인드 · 리바인</span></summary>
         <div id="lobbyOpts"></div>
@@ -443,9 +449,12 @@ $('#name').value = myName;
 // ── 방 설정 입력칸 (로비/대기실 공통) ──
 const DEF = { buyIn: 10000, sb: 100, bb: 200, blindMinutes: 0, maxRebuys: 2 };
 function loadSettings(){ try { return { ...DEF, ...JSON.parse(store.get('holdem_settings') || '{}') }; } catch { return { ...DEF }; } }
+const creationPure = () => !!window.APP_MODE || $('#roomMode').value === 'pure';
+const settingsPure = pre => pre === 'l_' ? creationPure() : !!(latest || S)?.noMoney;
+if (window.APP_MODE) $('#modeChoice').hidden = true;
 function settingsHTML(pre, v){
   const f = (id, label, val, hint, step = 1, cls = '') => `<label class="${cls}">${label}${hint ? `<small>${hint}</small>` : ''}<input id="${pre}${id}" type="number" inputmode="numeric" min="0" step="${step}" value="${val}"></label>`;
-  if (window.APP_MODE) return `<div class="setgrid">
+  if (settingsPure(pre)) return `<div class="setgrid">
     ${f('chips', '시작 칩', v.chips ?? v.buyIn, '입장할 때 받는 칩 개수', 1000, 'span2')}
     ${f('sb', '스몰블라인드(SB)', v.sb, '칩')}
     ${f('bb', '빅블라인드(BB)', v.bb, '칩')}
@@ -462,17 +471,22 @@ function settingsHTML(pre, v){
 }
 function readSettings(pre){
   const g = (id) => Number($(`#${pre}${id}`).value);
-  if (window.APP_MODE) return { chips: g('chips'), sb: g('sb'), bb: g('bb'), blindMinutes: g('blindMinutes'), maxRebuys: g('maxRebuys') };
+  if (settingsPure(pre)) return { chips: g('chips'), sb: g('sb'), bb: g('bb'), blindMinutes: g('blindMinutes'), maxRebuys: g('maxRebuys') };
   return { buyIn: g('buyIn'), sb: g('sb'), bb: g('bb'), blindMinutes: g('blindMinutes'), maxRebuys: g('maxRebuys') };
 }
 function updateRate(pre){
   const el = $(`#${pre}rate`); if (!el) return;
   const v = readSettings(pre);
-  if (window.APP_MODE) { el.textContent = v.bb > 0 && v.chips > 0 ? `시작 칩 ${fmt(v.chips)}개 · 빅블라인드의 ${(v.chips / v.bb).toLocaleString('ko-KR', { maximumFractionDigits: 1 })}배${v.chips < v.bb * 10 ? ' ⚠ 10배 이상이어야 해요' : ''}` : ''; return; }
+  if (settingsPure(pre)) { el.textContent = v.bb > 0 && v.chips > 0 ? `시작 칩 ${fmt(v.chips)}개 · 빅블라인드의 ${(v.chips / v.bb).toLocaleString('ko-KR', { maximumFractionDigits: 1 })}배${v.chips < v.bb * 10 ? ' ⚠ 10배 이상이어야 해요' : ''}` : ''; return; }
   el.textContent = v.bb > 0 && v.buyIn > 0 ? `바이인 ${fmt(v.buyIn)}원 = 칩 ${fmt(v.buyIn)}개 · 빅블라인드의 ${(v.buyIn / v.bb).toLocaleString('ko-KR', { maximumFractionDigits: 1 })}배${v.buyIn < v.bb * 10 ? ' ⚠ 10배 이상이어야 해요' : ''}` : '';
 }
 $('#lobbyOpts').innerHTML = settingsHTML('l_', loadSettings());
 updateRate('l_');
+$('#roomMode').addEventListener('change', () => {
+  const v = loadSettings();
+  $('#lobbyOpts').innerHTML = settingsHTML('l_', v); updateRate('l_');
+  $('#modeHint').textContent = creationPure() ? '현금·환전·상금 없이 가상 칩으로 플레이해요.' : '기존 정산 방식으로 플레이해요.';
+});
 document.addEventListener('input', (e) => { const m = /^(l_|w_)/.exec(e.target.id || ''); if (m) updateRate(m[1]); });
 try { const f = sessionStorage.getItem('flash'); if (f) { sessionStorage.removeItem('flash'); setTimeout(() => toast(f), 400); } } catch {} // 연습이 자동으로 끝나 메인으로 왔을 때 이유 안내
 const hash = location.hash.replace('#','').toUpperCase();
@@ -492,7 +506,7 @@ function connect(then) {
 function send(o){ if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); }
 function join(room, settings, practice){
   roomWanted = room;
-  send({ t:'join', room, name: myName, token, settings, practice: practice || undefined, ...(window.appJoinExtra ? window.appJoinExtra(room, settings) : {}) });
+  send({ t:'join', room, name: myName, token, settings, mode: practice || creationPure() ? 'pure' : 'settlement', practice: practice || undefined, ...(window.appJoinExtra ? window.appJoinExtra(room, settings) : {}) });
 }
 window.appApi = { join, send, getState: () => latest || S };
 function start(room, practice){
@@ -612,6 +626,7 @@ function renderUI(){
   $('#tableCount').textContent = `${s.players.length} / 10 플레이어`;
   document.querySelectorAll('[data-street]').forEach(el => el.classList.toggle('active', el.dataset.street === s.phase));
   $('#roomCode').textContent = s.room;
+  $('#settleTitle').textContent = s.noMoney ? '🏆 최종 칩 순위' : '💰 정산 결과';
   $('#blinds').innerHTML = `블라인드 ${fmt(s.sb)}/${fmt(s.bb)}<span id="blindCd"></span>`;
   $('#handNo').textContent = s.ended ? '게임 종료' : s.handNo ? `핸드 #${s.handNo}` : '대기실';
   // 방장 버튼 묶음: 강제 퇴장 · 일시정지 · 게임 종료 (일시정지는 게임 종료 바로 왼쪽, 같은 줄)
@@ -670,7 +685,7 @@ function renderUI(){
 
 function summaryHTML(s){
   const inc = s.blindMinutes > 0 ? `<b>${s.blindMinutes}분</b>마다 2배` : '<b>고정</b>';
-  if (window.APP_MODE) return `<div class="sum">시작 칩 <b>${fmt(s.startChips)}개</b> · 블라인드 <b>${fmt(s.sb)}/${fmt(s.bb)}</b> (${inc}) · 리바인 최대 <b>${s.maxRebuys}회</b></div>`;
+  if (s.noMoney) return `<div class="sum">시작 칩 <b>${fmt(s.startChips)}개</b> · 블라인드 <b>${fmt(s.sb)}/${fmt(s.bb)}</b> (${inc}) · 리바인 최대 <b>${s.maxRebuys}회</b></div>`;
   return `<div class="sum">바이인 <b>${fmt(s.buyIn)}원</b> (칩 1개 = 1원) · 블라인드 <b>${fmt(s.sb)}/${fmt(s.bb)}</b> (${inc}) · 리바인 최대 <b>${s.maxRebuys}회</b></div>`;
 }
 function renderWait(){
@@ -691,7 +706,7 @@ function renderWait(){
     ${s.isHost ? `<button class="btn ghost bp-add" data-addbot ${s.players.length >= 10 ? 'disabled' : ''}>+ 봇 추가</button>` : ''}
     <p class="bp-note">전체 2~10명까지 · 봇은 카드, 내 자리, 팟 오즈를 보고 사람처럼 판단해요.</p></div>` : '';
   box.innerHTML = `<div class="eyebrow">${s.practice ? 'PRACTICE TABLE' : 'READY WHEN YOU ARE'}</div><h2>${s.practice ? '연습 테이블' : '친구를 초대해요'} <span class="ready-count">${s.players.length}/10</span></h2>
-    <p>${s.practice ? '봇과 연습하는 테이블이에요. 친구도 링크로 함께할 수 있어요.' : '링크를 공유하면 같은 테이블로 모여요.'} <br>방 코드: <b style="color:var(--gold);letter-spacing:2px">${s.room}</b></p>
+    <p>${s.practice ? '봇과 연습하는 테이블이에요. 친구도 링크로 함께할 수 있어요.' : '링크를 공유하면 같은 테이블로 모여요.'} <br>방 코드: <b style="color:var(--gold);letter-spacing:2px">${s.room}</b> · ${s.noMoney ? '미정산 · 가상 칩' : '정산 게임'}</p>
     <div class="linkbox"><input id="linkIn" readonly value="${link}"><button id="copyBtn">복사</button></div>${bots}
     ${s.isHost ? `${settingsHTML('w_', { buyIn: s.buyIn, chips: s.startChips, sb: s.sb, bb: s.bb, blindMinutes: s.blindMinutes, maxRebuys: s.maxRebuys })}
       <button class="btn" id="startBtn" ${ready < 2 ? 'disabled' : ''}>${ready < 2 ? '친구를 기다리는 중 (2명 이상 필요)' : `게임 시작 (${ready}명)`}</button>`
@@ -707,7 +722,7 @@ function renderBar(){
   if (!mp) { put('', 'none'); return; }
   const inHandNow = ['preflop','flop','turn','river'].includes(s.phase);
   if (s.ended) {
-    put(`<div class="msg">${s.settlement && s.settlement.reason === 'winner' ? '🏆 1등이 가려져서 게임이 끝났어요' : s.settlement && s.settlement.reason === 'out' ? '🏁 칩이 모두 떨어져 연습이 끝났어요' : '⏹ 게임이 끝났어요'}</div><div class="acts"><button class="a-raise" data-do="settle">${window.APP_MODE ? '🏆 최종 순위 보기' : '💰 정산 결과 보기'}</button></div><div class="acts" style="margin-top:8px"><button class="a-call" data-do="newgame">🆕 새 게임 만들기</button><button class="a-neutral" data-do="joingame">🚪 방 참여하기</button></div>`, 'ended');
+    put(`<div class="msg">${s.settlement && s.settlement.reason === 'winner' ? '🏆 1등이 가려져서 게임이 끝났어요' : s.settlement && s.settlement.reason === 'out' ? '🏁 칩이 모두 떨어져 연습이 끝났어요' : '⏹ 게임이 끝났어요'}</div><div class="acts"><button class="a-raise" data-do="settle">${s.noMoney ? '🏆 최종 순위 보기' : '💰 정산 결과 보기'}</button></div><div class="acts" style="margin-top:8px"><button class="a-call" data-do="newgame">🆕 새 게임 만들기</button><button class="a-neutral" data-do="joingame">🚪 방 참여하기</button></div>`, 'ended');
     return;
   }
   const live = inHandNow && mp.inHand && !mp.folded;
@@ -750,7 +765,7 @@ function renderBar(){
   const emotes = `<div class="emotes"><button data-emote="angry">😡 화남</button><button data-emote="thanks">💖 감사</button><button data-emote="sad">😭 슬픔</button><button data-emote="hurry">⚾ 빨리</button></div>`;
   put(`<div class="msg">${status}</div>
     <div class="betwrap ${locked ? 'locked' : ''}">${raiseRow}${presets}${rebuy ? '' : acts}${locked ? '<div class="betlock" data-lock="1"></div>' : ''}</div>
-    ${rebuy ? `<div class="acts"><button class="a-raise" data-do="rebuy">칩 ${fmt(s.startChips)} 다시 사기${window.APP_MODE ? '' : ` (+${fmt(s.buyIn)}원)`}</button></div>` : ''}
+    ${rebuy ? `<div class="acts"><button class="a-raise" data-do="rebuy">칩 ${fmt(s.startChips)} ${s.noMoney ? '다시 받기' : '다시 사기'}${s.noMoney ? '' : ` (+${fmt(s.buyIn)}원)`}</button></div>` : ''}
     ${emotes}`, sig);
 }
 function updateRaiseBtn(){
@@ -856,7 +871,8 @@ document.addEventListener('click', (e) => {
     const pr = !!(S && S.practice);
     $('#endTitle').textContent = pr ? '⏹ 연습을 끝낼까요?' : '⏹ 게임을 종료할까요?';
     $('#endBody').innerHTML = pr ? '정산 없이 <b style="color:var(--ink)">바로 메인 화면</b>으로 돌아가요.<br>진행 중인 판도 그 자리에서 끝나요.' : '진행 중인 핸드는 끝까지 마친 뒤 게임이 종료되고,<br>모든 플레이어에게 <b style="color:var(--ink)">정산 결과</b>가 나와요.<br>종료한 뒤에는 되돌릴 수 없어요.';
-    $('#endYes').textContent = pr ? '연습 종료' : '종료하고 정산';
+    if (!pr && S?.noMoney) $('#endBody').textContent = '현재 핸드가 끝나면 게임을 종료하고 최종 칩 순위를 보여줘요. 금전 정산은 없어요.';
+    $('#endYes').textContent = pr ? '연습 종료' : S?.noMoney ? '종료하고 순위 보기' : '종료하고 정산';
     $('#endConfirm').hidden = false; return;
   }
   if (t.id === 'endNo') { $('#endConfirm').hidden = true; return; }
@@ -981,7 +997,7 @@ function openSettle(){
   const st = S.settlement, body = $('#settleBody');
   $('#settle').hidden = false;
   if (!st || st.error) { body.innerHTML = `<p class="why">정산 계산 중 문제가 생겼어요: ${esc(st && st.error || '알 수 없는 오류')}</p>`; return; }
-  if (window.APP_MODE) return drawChipRank(st, body);
+  if (S.noMoney) return drawChipRank(st, body);
   const me = S.me, mr = st.rows.find((r) => r.i === me);
   const why = st.reason === 'winner' ? '🏆 1등이 가려져서 자동으로 종료됐어요.' : st.reason === 'out' ? '🏁 칩이 모두 떨어져 연습이 끝났어요.' : '⏹ 방장이 게임을 종료했어요.';
   const v = settleVerify(st);
@@ -1014,7 +1030,7 @@ function drawChipRank(st, body){ // 앱: 돈·송금 없이 칩 순위와 칩 �
 }
 function copySettle(){
   const st = S && S.settlement; if (!st || st.error) return;
-  if (window.APP_MODE) {
+  if (S.noMoney) {
     const lines = [`🏆 홀덤 결과 (시작 칩 ${fmt(st.startChips)}개)`, ''];
     st.rows.forEach((r) => lines.push(`${r.rank}위 ${r.name}: ${sg(r.netChips)} (최종 칩 ${fmt(r.chips)}개)`));
     const text = lines.map((l) => (window.tr ? window.tr(l) : l)).join('\n');
@@ -1043,7 +1059,7 @@ function tick(){
   }
   const cd = $('#nextCd');
   const cs = sd && !sd.hidden ? sd.st : S;
-  if (cd && cs.nextAt) cd.textContent = `${cs.ending ? (cs.practice ? '연습 종료까지' : '정산까지') : '다음 핸드까지'} ${Math.max(0, Math.ceil((cs.nextAt - now) / 1000))}초`;
+  if (cd && cs.nextAt) cd.textContent = `${cs.ending ? (cs.practice ? '연습 종료까지' : cs.noMoney ? '게임 종료까지' : '정산까지') : '다음 핸드까지'} ${Math.max(0, Math.ceil((cs.nextAt - now) / 1000))}초`;
   const bc = $('#blindCd');
   if (bc) {
     if (S.ended || S.blindMinutes <= 0) bc.textContent = '';

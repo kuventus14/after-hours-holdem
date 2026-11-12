@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>AFTER HOURS · 관리자 관전</title>
+<link rel="stylesheet" href="/admin.css"><script src="/admin.js" defer></script>
+</head>
+<body>
+<header><a class="brand" href="/"><span class="suit">♠</span><span>AFTER HOURS<small>TABLE OBSERVER</small></span></a><div class="header-right"><span id="connection" role="status">잠김</span><button id="logout" hidden>잠그기</button></div></header>
+<main>
+<section id="login" class="login panel">
+  <div class="eyebrow">PRIVATE ACCESS</div><h1>테이블을 한눈에.</h1><p>게임에 참가하지 않고 진행 상황을 확인하는<br>운영자 전용 관전 화면입니다.</p>
+  <form id="loginForm"><label for="adminKey">관리자 키</label><input id="adminKey" type="password" autocomplete="off" spellcheck="false" required minlength="32" maxlength="512" placeholder="관리자 키를 입력하세요"><button class="primary" id="unlock">관리자 화면 열기 <span>↗</span></button></form>
+  <p id="loginError" class="error" role="alert"></p><small>키는 이 탭의 메모리에만 보관됩니다.<br>새로고침하거나 잠그면 다시 입력해야 합니다.</small>
+</section>
+<section id="dashboard" hidden>
+<div class="intro"><div><div class="eyebrow">LIVE OVERVIEW</div><h1>오늘의 테이블</h1><p>방을 선택하면 상세 정보가 열립니다. 2초마다 자동 갱신됩니다.</p></div><span id="updated" class="muted"></span></div>
+<div class="metrics"><div class="panel"><small>전체 테이블</small><strong id="countRooms">0</strong></div><div class="panel"><small>진행 중</small><strong id="countLive">0</strong></div><div class="panel"><small>접속 중인 유저 <span>봇 제외</span></small><strong id="countHumans">0</strong></div></div>
+<div id="dashboardError" class="error" role="alert"></div>
+<div class="workspace">
+<aside class="panel"><div class="list-head"><h2>테이블 목록</h2><label for="modeFilter" class="sr-only">방 종류 필터</label><select id="modeFilter"><option value="all">전체</option><option value="pure">미정산</option><option value="settlement">정산</option></select></div><label class="sr-only" for="search">방 코드 또는 방장 검색</label><input id="search" type="search" placeholder="방 코드 · 방장 검색" autocomplete="off"><div id="roomList" class="room-list"></div></aside>
+<section id="detail" class="detail panel" aria-label="선택한 게임 상세"><div class="empty"><span>♧</span><h2>테이블을 선택해 주세요</h2><p>왼쪽에서 관전할 게임을 선택하세요.</p></div></section>
+</div>
+<p class="footnote">미정산 방은 모든 패와 예정 보드를 표시합니다. 정산 방은 이미 공개된 정보만 표시합니다. 이 화면에서는 게임을 조작할 수 없습니다.</p>
+</section>
+</main>
+</body></html>

@@ -1,0 +1,4 @@
+.mode-choice { margin: 12px 0; }
+.mode-choice[hidden] { display: none; }
+.mode-choice select { width: 100%; background: #172322; color: #f3e9d7; }
+.mode-hint { color: #aebdb8; font: 12px/1.65 system-ui; margin: 8px 0 14px; }

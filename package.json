@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "node test.js && node test-hit.js && node test-brag.js && node test-hit-server.js",
-    "test:bots": "node test-hit-bots.js"
+    "test:bots": "node test-hit-bots.js",
+    "test:observer": "node test-observer.js"
   },
   "keywords": [],
   "author": "",
