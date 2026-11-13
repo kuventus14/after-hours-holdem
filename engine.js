@@ -168,7 +168,7 @@ const BRAG_MS = 8000, BRAG_ANIM_MS = 10000;
 
 class Table {
   constructor(opts = {}) {
-    this.opts = Object.assign({ auto: true, pace: true, turnMs: 30000, nextHandMs: 7000, absentMs: 3000, showdownExtraMs: 4000 }, opts);
+    this.opts = Object.assign({ auto: true, pace: true, turnMs: 30000, nextHandMs: 3000, absentMs: 3000, showdownExtraMs: 0 }, opts);
     // The mode is fixed at creation, including against later settings messages.
     Object.defineProperty(this.opts, 'noMoney', { value: opts.noMoney === true, writable: false, configurable: false, enumerable: true });
     this.players = [];
