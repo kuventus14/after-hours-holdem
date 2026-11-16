@@ -49,6 +49,7 @@
   }
   const dressAll = (root) => root.querySelectorAll('.pcard').forEach(dress);
   window.appgameDress = dressAll; // 시험·미리보기용
+  let syncLayout = () => {};
 
   function build() {
     const game = $('#game'); if (!game || $('#agRaise')) return;
@@ -59,7 +60,22 @@
     top.appendChild(menuBtn);
     const menu = Object.assign(document.createElement('div'), { id: 'agMenu' });
     document.body.appendChild(menu);
-    const gather = () => ['#rbBtn', '#sndBtn', '.motion-toggle', '#hostBtns', '.langpick'].forEach((q) => { const el = $(q, top) || $(q, menu); if (el && el.parentNode !== menu) menu.appendChild(el); });
+    // 모바일에서만 옮기고, PC로 돌아오면 기존 위치·버튼·이벤트를 그대로 복원한다.
+    const homes = new Map();
+    const place = (el, target) => {
+      if (!el) return;
+      if (mq.matches) {
+        if (!homes.has(el)) {
+          const home = document.createComment('appgame original position');
+          el.before(home); homes.set(el, home);
+        }
+        if (el.parentNode !== target) target.appendChild(el);
+      } else {
+        const home = homes.get(el);
+        if (home && el.previousSibling !== home) home.after(el);
+      }
+    };
+    const gather = () => ['#rbBtn', '#sndBtn', '.motion-toggle', '#hostBtns', '.langpick'].forEach((q) => place($(q, top) || $(q, menu), menu));
     const cl = Object.assign(document.createElement('button'), { className: 'pill', id: 'agClassicBtn', textContent: '기존 화면으로 보기' });
     cl.onclick = () => { store.set('holdem_classic', '1'); location.reload(); };
     menu.appendChild(cl);
@@ -83,7 +99,8 @@
     const back = Object.assign(document.createElement('div'), { id: 'agSheetBack' });
     const sheet = Object.assign(document.createElement('div'), { id: 'agSheet' });
     sheet.innerHTML = '<div class="grab"></div><div class="emotes"><button data-emote="angry">😡 화남</button><button data-emote="thanks">💖 감사</button><button data-emote="sad">😭 슬픔</button><button data-emote="hurry">⚾ 빨리</button></div>';
-    sheet.appendChild($('#sayRow'));
+    const sayRow = $('#sayRow');
+    place(sayRow, sheet);
     document.body.append(back, sheet);
     const setSheet = (on) => { back.classList.toggle('open', on); sheet.classList.toggle('open', on); };
     emoBtn.onclick = () => setSheet(!sheet.classList.contains('open'));
@@ -200,9 +217,21 @@
     syncHint();
     // 레이즈 중에 차례가 넘어가거나 판이 끝나면 닫는다
     new MutationObserver(() => { if (R) { const i = turnInfo(); if (!i || !i.myTurn) closeRaise(); } }).observe($('#bar'), { childList: true, subtree: true });
+    syncLayout = () => {
+      gather(); place(sayRow, sheet);
+      if (!mq.matches) {
+        toggleMenu(false); setSheet(false); closeRaise(); g = null;
+        strip.classList.remove('dragging');
+        const cs = $('.cs', strip); if (cs) cs.style.transform = '';
+      }
+    };
+    syncLayout();
   }
 
-  const apply = () => document.body.classList.toggle('appgame', mq.matches && !classic);
+  const apply = () => {
+    document.body.classList.toggle('appgame', mq.matches && !classic);
+    syncLayout();
+  };
   const init = () => {
     if (classic) { // 예전 화면: 새 화면으로 돌아가는 작은 버튼만 둔다
       const top = $('#game .top'); if (!top) return;

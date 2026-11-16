@@ -1,4 +1,4 @@
-/* 앱 모드 폰 화면의 게임 셸 (C-3 시안). body.appgame 은 appgame.js 가 "앱 모드 + 폭 700px 이하"일 때만 붙인다 → 웹·PC 는 그대로. */
+/* 폰 화면의 게임 셸 (C-3 시안). body.appgame 은 앱·웹 모두 폭 700px 이하일 때만 붙인다. PC에서는 원래 배치를 유지한다. */
 body.appgame.ingame{overflow:hidden;overscroll-behavior:none}
 body.appgame.ingame #game{position:fixed;inset:0;padding:0;max-width:none;width:100%;height:100dvh;min-height:0;display:block;overflow:hidden}
 
